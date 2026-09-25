@@ -11,7 +11,29 @@ same declined purchase told properly. Plain HTML, CSS and JavaScript, in English
 
 Any static server works, for example `npx http-server . -p 8936 -c-1`, then open
 `http://localhost:8936/`. `?lang=ar` opens the Arabic page. There is no build step and no
-dependency to install.
+dependency to install. `node scripts/serve.mjs 8937` does the same with Brotli, like a real
+host.
+
+## Working on it
+
+This repository is the source of truth. Edit here, run the checks, commit, push: the site
+at GitHub Pages rebuilds from `main` within a minute or two.
+
+```
+git pull
+node scripts/check.mjs                # structure, links, anonymity, phone/ integrity
+node scripts/smoke.js                 # the HTML phone against a DOM stub
+node scripts/browser.mjs [baseUrl]    # real Chromium (Playwright): themes, RTL, contrast,
+                                      # overflow, motion, the Flutter swap
+node scripts/measure.mjs [baseUrl]    # cold-load bytes and timings
+git add -A && git commit -m "..." && git push
+```
+
+`browser.mjs` needs Playwright with a Chromium install (`PLAYWRIGHT_DIR` points to a
+`node_modules` folder that contains it). The anonymity check reads its forbidden terms from
+an untracked `.identity-terms` file (one regular expression per line), because listing them
+in a public repository would publish them. Without it, only the generic patterns run.
+Commit as a neutral author (`git config user.name` and `user.email`, set per repository).
 
 ## How the phone works
 
