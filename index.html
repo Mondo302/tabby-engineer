@@ -273,6 +273,7 @@
           <h3 id="cinema-label" class="cinema__label" data-i18n="cinema.label">Her case, played through</h3>
           <div class="cinema__stage">
             <a class="cinema__skip" href="#ending" data-i18n="cinema.skip">Skip the story</a>
+            <div class="cinema__cue" aria-hidden="true"><i></i></div>
             <div class="cinema__phone">
               <div class="cinema__fit">
                 <!-- One box for the phone. The HTML phone (prototype.js) fills it
@@ -310,7 +311,7 @@
            the one-sentence fix. The depth (trade-offs, who it helps, how you
            would know) sits below, after the phone, so the story still lands
            inside the first minute. -->
-      <section id="ending" class="section ending" aria-labelledby="ending-title" data-chapter="conclusion">
+      <section id="ending" class="section ending" aria-labelledby="ending-title" data-chapter="conclusion" data-reveal>
         <h2 id="ending-title" class="ending__h2" data-i18n="end.h2">Now imagine the app had told her.</h2>
         <p class="ending__beat" data-i18n="end.l1">Why her payments were declined.</p>
         <p class="ending__beat" data-i18n="end.l2">When it would be looked at again.</p>
@@ -319,11 +320,11 @@
         <p class="ending__fix" data-i18n="end.fix">Say why. Say when it will be looked at again. Say when it’s over.</p>
       </section>
 
-      <section id="cases" class="section cases" aria-labelledby="cases-title">
+      <section id="cases" class="section cases" aria-labelledby="cases-title" data-reveal>
         <h2 id="cases-title" data-i18n="cases.h2">Three people, one gap</h2>
         <p class="section-lede" data-i18n="cases.lede">Two are people I spoke to. The third is a pattern in public reviews. None of it is a Tabby statement.</p>
         <div class="cases__grid">
-          <article class="case">
+          <article class="case" data-reveal>
             <h3 class="case__title" data-i18n="cases.c1.title">The never-late payer</h3>
             <dl class="case__list">
               <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c1.fact">Pays upfront, never late. Declined for months. Support couldn’t explain why.</dd></div>
@@ -331,7 +332,7 @@
               <div class="case__fix"><dt data-i18n="cases.fix">What the screen says instead</dt><dd data-i18n="cases.c1.fix">It’s a review. Here’s the date. Nothing is needed from you. We’ll tell you when it lifts.</dd></div>
             </dl>
           </article>
-          <article class="case">
+          <article class="case" data-reveal>
             <h3 class="case__title" data-i18n="cases.c2.title">The new account</h3>
             <dl class="case__list">
               <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c2.fact">Tried 2,000, 3,000, 4,000 and 5,000: all declined. 1,800 went through, for 3 months only.</dd></div>
@@ -339,7 +340,7 @@
               <div class="case__fix"><dt data-i18n="cases.fix">What the screen says instead</dt><dd data-i18n="cases.c2.fix">Your account is new, so your limit starts lower. Here’s what fits: a smaller amount, or another plan length.</dd></div>
             </dl>
           </article>
-          <article class="case">
+          <article class="case" data-reveal>
             <h3 class="case__title" data-i18n="cases.c3.title">The limit cut</h3>
             <dl class="case__list">
               <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c3.fact">A long-standing account, reviewed, and its limit reduced without warning.</dd></div>
@@ -350,7 +351,7 @@
         </div>
       </section>
 
-      <section id="skipped" class="section" aria-labelledby="skip-title">
+      <section id="skipped" class="section" aria-labelledby="skip-title" data-reveal>
         <h2 id="skip-title" data-i18n="skip.h2">What I chose not to build</h2>
         <ul class="skipped">
           <li data-i18n="skip.l1Html"><strong>A real Tabby connection.</strong> This is a static demonstration with realistic mock data: no backend, no accounts, no database.</li>
@@ -359,7 +360,7 @@
         </ul>
       </section>
 
-      <section id="why-not" class="section">
+      <section id="why-not" class="section" data-reveal>
         <h2 data-i18n="page.whyH2"></h2>
         <p class="section-lede" data-i18n="page.whyLede"></p>
         <ol class="reasons">
@@ -371,13 +372,13 @@
         </ol>
       </section>
 
-      <section id="who" class="section">
+      <section id="who" class="section" data-reveal>
         <h2 data-i18n="page.whoH2"></h2>
         <p data-i18n="page.whoP1"></p>
         <p data-i18n="page.whoP2"></p>
       </section>
 
-      <section id="metrics" class="section">
+      <section id="metrics" class="section" data-reveal>
         <h2 data-i18n="page.metricsH2"></h2>
         <p class="section-lede" data-i18n="page.metricsLede"></p>
         <ul class="metrics">
@@ -388,13 +389,13 @@
         <p data-i18n="page.metricsHow">How I’d run it: show the new decline screen to half of new and recently reviewed accounts, keep today’s screen for the other half, and compare these three numbers after a fixed period. I’m not predicting the results.</p>
       </section>
 
-      <section id="ships" class="section" aria-labelledby="ships-title">
+      <section id="ships" class="section" aria-labelledby="ships-title" data-reveal>
         <h2 id="ships-title" data-i18n="ships.h2">What ships first</h2>
         <p class="ships__lead" data-i18n="ships.p1">One screen: the decline screen. Add a reason category, the date of the next review and one next step, and nothing else.</p>
         <p data-i18n="ships.p2">The limit screen, the “restored” message and the plan-length alternatives come after, and each one has to earn its place against the three numbers above.</p>
       </section>
 
-      <section id="sources" class="section" aria-labelledby="sources-title">
+      <section id="sources" class="section" aria-labelledby="sources-title" data-reveal>
         <h2 id="sources-title" data-i18n="sources.h2">Sources and limits</h2>
         <p class="section-lede" data-i18n="sources.lede">What I used, and what it can’t tell you.</p>
         <ul class="sources">
@@ -424,5 +425,6 @@
     <script src="assets/opening.js"></script>
     <script src="assets/phone-version.js"></script>
     <script src="assets/phone.js"></script>
+    <script src="assets/ink.js"></script>
   </body>
 </html>

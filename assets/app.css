@@ -3432,3 +3432,139 @@ html:not(.js) :is(.wcard, .wcard__dot, .wcard__empty) {
     box-shadow: 0 0 0 1px rgba(26, 25, 25, 0.22);
   }
 }
+
+/* --- 2026-09-26: the story shows the framed device on phones too --------------
+   The frameless phone looked like a broken page on a real phone and overlapped the
+   caption. Inside the story the device keeps its bezel, island and status bar at
+   every width and is scaled to fit (cinema.js), exactly like desktop. */
+@media (max-width: 480px) {
+  .cinema.is-scripted .phone {
+    --bezel: 11px;
+    width: 390px;
+    max-width: none;
+    padding: var(--bezel);
+    border-radius: 56px;
+    background: #0d0d0d;
+    box-shadow: 0 0 0 1.5px #2e2e2e, 0 30px 60px -30px rgba(13, 13, 13, 0.55);
+  }
+  .cinema.is-scripted .phone__screen {
+    height: 780px;
+    min-height: 0;
+    border-radius: 45px;
+    box-shadow: none;
+  }
+  .cinema.is-scripted .island,
+  .cinema.is-scripted .statusbar,
+  .cinema.is-scripted .home-indicator {
+    display: revert;
+  }
+  .cinema.is-scripted .island { display: block; }
+  .cinema.is-scripted .statusbar { display: flex; }
+  .cinema.is-scripted .phone__body {
+    padding: 0.35rem 1.15rem 0;
+    overflow-y: auto;
+  }
+}
+
+/* a scroll cue under the caption while the story waits for the visitor */
+.cinema__cue {
+  display: none;
+}
+.cinema.is-scripted:not([data-scene='8']) .cinema__cue {
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.cinema__cue i {
+  width: 22px;
+  height: 34px;
+  border: 2px solid var(--text-muted);
+  border-radius: 12px;
+  position: relative;
+}
+.cinema__cue i::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 4px;
+  height: 7px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--page-text);
+  animation: cue-wheel 1.6s var(--ease) infinite;
+}
+@keyframes cue-wheel {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* --- ink cursor (desktop, fine pointer, motion allowed) ------------------------ */
+.ink-dot,
+.ink-cloud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ink-on .ink-dot,
+.ink-on .ink-cloud {
+  opacity: 1;
+}
+.ink-dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--page-text);
+}
+.ink-cloud {
+  z-index: 0;
+  width: 360px;
+  height: 360px;
+  margin: -180px 0 0 -180px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--pressure) 22%, transparent), color-mix(in srgb, var(--relief) 8%, transparent) 55%, transparent);
+}
+.ink-cloud--2 {
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--relief) 12%, transparent), transparent 70%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ink-on,
+  .ink-on a,
+  .ink-on button {
+    cursor: none;
+  }
+}
+
+/* --- reveal on scroll for everything below the story --------------------------- */
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.js-reveal [data-reveal].is-seen {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal] { opacity: 1; transform: none; }
+  .cinema__cue i::after { animation: none; }
+}
+.cinema.is-scripted .cinema__stage { position: sticky; }
+.cinema.is-scripted:not([data-scene='8']) .cinema__cue {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 10px;
+  z-index: 3;
+}
+@media (min-width: 60rem) {
+  .cinema.is-scripted .cinema__cue { display: none !important; }
+}

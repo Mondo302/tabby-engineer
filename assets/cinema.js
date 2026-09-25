@@ -139,7 +139,8 @@
     var pw = 390;
     var f;
     var ph;
-    if (narrow.matches) {
+    if (false && narrow.matches) {
+      // (was: frameless on phones; 2026-09-26 the story shows the framed device everywhere)
       // Frameless: as wide as the screen allows, and as tall as the space left
       // under it, so the text stays readable and the screen shows its top part.
       f = Math.min(1, (vw - 32) / pw);
