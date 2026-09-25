@@ -206,7 +206,50 @@
     var relief = proto ? clamp((y - turn) / Math.max(1, docH - vh - turn), 0, 1) : 0;
     header.style.setProperty('--p-story', story.toFixed(4));
     header.style.setProperty('--p-relief', relief.toFixed(4));
+
+    cinemaMode(y);
   }
+
+  // Cinema: while the phone story's stage is pinned (scenes 1-7) and the
+  // visitor scrolls down, the header slides away and only the hairline stays.
+  // It comes back on scroll-up past a small run, on keyboard focus inside it,
+  // on Escape, in the last scene and anywhere outside the story. Transform and
+  // opacity only (app.css); the header keeps its place in the layout.
+  var cinema = document.getElementById('cinema');
+  var lastBeat = cinema ? cinema.querySelector('.cinema__beat--last') : null;
+  var lastY = window.pageYOffset || 0;
+  var upRun = 0;
+  var UP = 40; // px of scrolling up before it returns
+
+  function setCinema(on) {
+    header.classList.toggle('is-cinema', on);
+  }
+
+  function cinemaMode(y) {
+    var dy = y - lastY;
+    lastY = y;
+    var pinned = false;
+    if (cinema && lastBeat && cinema.classList.contains('is-scripted')) {
+      pinned = cinema.getBoundingClientRect().top <= 1 && lastBeat.getBoundingClientRect().top > 1;
+    }
+    if (!pinned) {
+      upRun = 0;
+      setCinema(false);
+    } else if (dy > 0) {
+      upRun = 0;
+      if (!header.contains(document.activeElement)) setCinema(true);
+    } else if (dy < 0) {
+      upRun -= dy;
+      if (upRun > UP) setCinema(false);
+    }
+  }
+
+  header.addEventListener('focusin', function () {
+    setCinema(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') setCinema(false);
+  });
 
   function request() {
     if (queued) return;

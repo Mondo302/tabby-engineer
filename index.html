@@ -262,9 +262,47 @@
              fills it and is the whole entry on its own; assets/phone.js may lay
              the Flutter build of the same phone over the same box (#phone-host)
              once that has painted, and only if the HTML phone is untouched. -->
-        <div id="prototype-stage" data-engine="html" data-phone-status="idle">
-          <div id="prototype-root" data-state="empty"></div>
-          <div id="phone-host" inert aria-hidden="true"></div>
+        <!-- The cinema: her case played on the phone as the page scrolls.
+             Without JavaScript, or with reduced motion, this is a plain block:
+             the phone with its controls, and the scenes as an ordered list
+             beside it. assets/cinema.js adds .is-scripted, and every rule that
+             pins, hides or moves anything is scoped to that class. The stage is
+             position: sticky inside the tall block; the beats after it only
+             give the block its height and mark where each scene starts. -->
+        <div id="cinema" class="cinema" aria-labelledby="cinema-label">
+          <h3 id="cinema-label" class="cinema__label" data-i18n="cinema.label">Her case, played through</h3>
+          <div class="cinema__stage">
+            <a class="cinema__skip" href="#ending" data-i18n="cinema.skip">Skip the story</a>
+            <div class="cinema__phone">
+              <div class="cinema__fit">
+                <!-- One box for the phone. The HTML phone (prototype.js) fills it
+                     and is the whole entry on its own; assets/phone.js may lay the
+                     Flutter build of the same phone over the same box
+                     (#phone-host) once that has painted. -->
+                <div id="prototype-stage" data-engine="html" data-phone-status="idle">
+                  <div id="prototype-root" data-state="empty"></div>
+                  <div id="phone-host" inert aria-hidden="true"></div>
+                </div>
+              </div>
+            </div>
+            <div class="cinema__caption">
+              <p class="cinema__badge" aria-hidden="true"><span class="cinema__badge-today" data-i18n="cinema.modeToday">Today</span><span class="cinema__badge-proposed" data-i18n="cinema.modeProposed">Proposed</span></p>
+              <ol class="cinema__scenes">
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s1.title">Another purchase.</h4><p class="cinema__line" data-i18n="cinema.s1.text">SAR 900 this time. She has never paid late. She taps Buy.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s2.title">Checkout.</h4><p class="cinema__line" data-i18n="cinema.s2.text">Four instalments. Nothing unusual. She taps Pay.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s3.title">A moment.</h4><p class="cinema__line" data-i18n="cinema.s3.text">A second or two, then the answer.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s4.title">This is where it ended for her.</h4><p class="cinema__line" data-i18n="cinema.s4.text">Declined. No reason, no date, no next step. Try again later.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s5.title">The same decline, told properly.</h4><p class="cinema__line" data-i18n="cinema.s5.text">Still a no. But it says why, and when it will be looked at again.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s6.title">Her limit, in the open.</h4><p class="cinema__line" data-i18n="cinema.s6.text">What it is, when it is reviewed, and that nothing is needed from her.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s7.title">The message she never got.</h4><p class="cinema__line" data-i18n="cinema.s7.text">In her case it just started working again. Here, she is told: reviewed, and restored.</p></li>
+                <li class="cinema__scene"><h4 class="cinema__title" data-i18n="cinema.s8.title">Your turn.</h4><p class="cinema__line" data-i18n="cinema.s8.text">Pick a case, switch between Today and Proposed, tap Buy.</p><div id="cinema-controls" class="cinema__controls"></div></li>
+              </ol>
+              <div class="cinema__dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="cinema__beats" aria-hidden="true">
+            <div class="cinema__beat"></div><div class="cinema__beat"></div><div class="cinema__beat cinema__beat--short"></div><div class="cinema__beat"></div><div class="cinema__beat"></div><div class="cinema__beat"></div><div class="cinema__beat"></div><div class="cinema__beat cinema__beat--last"></div>
+          </div>
         </div>
       </section>
 
@@ -382,6 +420,7 @@
     <script src="assets/page.js"></script>
     <script src="assets/header.js"></script>
     <script src="assets/scroll.js"></script>
+    <script src="assets/cinema.js"></script>
     <script src="assets/opening.js"></script>
     <script src="assets/phone-version.js"></script>
     <script src="assets/phone.js"></script>

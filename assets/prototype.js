@@ -98,7 +98,12 @@
     screen.appendChild(el('div', 'screen__glyph', '!'));
     screen.appendChild(el('h3', 'screen__title', t('today.title')));
     screen.appendChild(el('p', 'screen__body', t('today.body')));
-    screen.appendChild(el('button', 'btn btn--ghost', t('today.action')));
+    // Nothing sits behind this button in the prototype, so it is shown as in
+    // today's app and marked as not usable, rather than silently doing nothing.
+    const gotIt = el('button', 'btn btn--ghost', t('today.action'));
+    gotIt.type = 'button';
+    gotIt.setAttribute('aria-disabled', 'true');
+    screen.appendChild(gotIt);
     screen.appendChild(el('p', 'screen__help', t('today.help')));
     return screen;
   }
@@ -710,6 +715,7 @@
         // judge back to the checkout to tap through again.
         state.screen = state.screen === 'checkout' ? 'checkout' : 'decline';
         render();
+        announce();
       });
       wrap.appendChild(button);
     }
@@ -744,18 +750,35 @@
           state.screen = 'decline';
         }
         render();
+        announce();
       });
       wrap.appendChild(card);
     }
     return wrap;
   }
 
+  // A visitor's choice on the controls, told to anyone listening (cinema.js
+  // forwards it to the Flutter phone, whose own controls are off in the story).
+  function announce() {
+    try {
+      window.dispatchEvent(new CustomEvent('phone-control', { detail: { scenarioId: state.scenarioId, mode: state.mode } }));
+    } catch (e) {
+      /* old browsers: the HTML phone is still right */
+    }
+  }
+
   function render() {
     root.textContent = '';
     root.dataset.state = state.mode;
 
-    root.appendChild(renderScenarioPicker());
-    root.appendChild(renderModeToggle());
+    // While the scroll story (cinema.js) is live, the case picker and the
+    // Today/Proposed toggle live beside the phone, in the narration, and show
+    // only in its last scene. Otherwise they sit above the phone, as always.
+    const host = document.getElementById('cinema-controls');
+    const controls = host && host.hasAttribute('data-live') ? host : root;
+    if (host) host.textContent = '';
+    controls.appendChild(renderScenarioPicker());
+    controls.appendChild(renderModeToggle());
 
     const phone = el('div', 'phone');
     const screenShell = el('div', 'phone__screen');

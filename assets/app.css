@@ -1216,6 +1216,11 @@ button.screen__link {
   outline-offset: 2px;
 }
 
+/* shown as the real app shows it, but nothing sits behind it here */
+.btn[aria-disabled='true'] {
+  cursor: default;
+}
+
 .noscript {
   max-width: 40rem;
   margin: 2rem auto;
@@ -2997,4 +3002,433 @@ html:not(.js) :is(.wcard, .wcard__dot, .wcard__empty) {
   line-height: 1.35;
   letter-spacing: -0.012em;
   max-width: 28ch;
+}
+
+/* --- the cinema: her case, played on the phone as the page scrolls -----------
+   Without .is-scripted (no JavaScript, reduced motion, a failed script) this is
+   a plain block: the phone with its controls, and the scenes as an ordered list
+   beside it (from 60rem) or under it. cinema.js adds .is-scripted; everything
+   that pins, hides or moves is scoped to it. The stage is position: sticky
+   inside a tall block, so the browser does the pinning and scrolling stays the
+   visitor's own. Only opacity and transform animate (plus colour on the badge
+   and the dots); the one size that changes (--fit) is written on resize. */
+
+.cinema {
+  margin-top: calc(var(--space) * 3);
+}
+
+.cinema__label {
+  font-size: var(--step-1);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 calc(var(--space) * 1.25);
+}
+
+.cinema__skip,
+.cinema__badge,
+.cinema__dots,
+.cinema__beats {
+  display: none;
+}
+
+.cinema__scenes {
+  margin: calc(var(--space) * 2) 0 0;
+  padding-inline-start: 1.4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.cinema__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.section .cinema__line {
+  margin: 0.2rem 0 0;
+  color: var(--text-muted);
+}
+
+/* The static block keeps the phone stage full width, exactly as it was before
+   the story existed (the Flutter phone lays itself out for that box), with the
+   scenes as a list under it. */
+
+/* --- scripted ---------------------------------------------------------------- */
+
+.cinema.is-scripted {
+  --cw: min(72rem, 100vw - 2rem);
+  --band: 61px;
+  --fit: 1;
+  --pw: 390px;
+  --ph: 802px;
+  width: var(--cw);
+  margin-inline: calc((100% - var(--cw)) / 2);
+  display: grid;
+}
+
+/* the first state is set without a transition; the easing starts a frame later */
+.cinema.is-scripted:not(.is-armed) * {
+  transition: none !important;
+}
+
+.cinema.is-scripted .cinema__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.cinema.is-scripted .cinema__stage,
+.cinema.is-scripted .cinema__beats {
+  grid-area: 1 / 1;
+}
+
+.cinema.is-scripted .cinema__beats {
+  display: block;
+  pointer-events: none;
+}
+.cinema__beat {
+  height: 70vh;
+}
+/* the processing screen moves on by itself after 1.4 s: a short beat */
+.cinema__beat--short {
+  height: 35vh;
+}
+/* the last scene: the stage stays pinned for its first 60% of a screen (time to
+   take the controls), then lets go and scrolls away with the page */
+.cinema__beat--last {
+  height: 160vh;
+  height: 160svh;
+}
+
+.cinema.is-scripted .cinema__stage {
+  /* the phone and controls re-render inside the pinned stage; without this the
+     browser may pick a scroll anchor in there and jump the page when it changes */
+  overflow-anchor: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: start;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: auto minmax(0, 26rem);
+  /* the top band is the header's height, so the returning header never covers the phone */
+  grid-template-rows: var(--band) minmax(0, 1fr);
+  column-gap: clamp(3rem, 8vw, 8rem);
+  justify-content: center;
+  align-items: center;
+  padding-block-end: 24px;
+}
+
+.cinema.is-scripted .cinema__phone {
+  grid-row: 2;
+  position: relative;
+  width: calc(var(--pw) * var(--fit));
+  height: calc(var(--ph) * var(--fit));
+}
+
+.cinema.is-scripted .cinema__fit {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  width: var(--pw);
+  transform: scale(var(--fit));
+  transform-origin: top left;
+}
+[dir='rtl'] .cinema.is-scripted .cinema__fit {
+  transform-origin: top right;
+}
+
+/* locked while the story plays: not clickable, not reachable */
+.cinema.is-scripted:not([data-scene='8']) #prototype-stage,
+.cinema.is-scripted:not([data-scene='8']) #prototype-stage #phone-host {
+  pointer-events: none;
+}
+
+.cinema.is-scripted .cinema__caption {
+  grid-row: 2;
+  display: grid;
+  gap: 1.25rem;
+  align-content: center;
+  justify-items: start;
+}
+
+/* Today / Proposed: the only colour in the narration, and it follows the phone */
+.cinema.is-scripted .cinema__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  min-height: 2rem;
+  padding-block: 0.2rem;
+  padding-inline: 0.7rem 0.85rem;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--pressure);
+  transition: color 0.5s ease;
+}
+.cinema.is-scripted .cinema__badge::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.cinema[data-mode='proposed'] .cinema__badge {
+  color: var(--relief);
+}
+.cinema__badge-proposed,
+.cinema[data-mode='proposed'] .cinema__badge-today {
+  display: none;
+}
+.cinema[data-mode='proposed'] .cinema__badge-proposed {
+  display: inline;
+}
+.cinema[data-scene='8'] .cinema__badge {
+  visibility: hidden;
+}
+
+/* all eight scenes sit in one cell; the current one shows (a crossfade in place) */
+.cinema.is-scripted .cinema__scenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  width: 100%;
+}
+.cinema.is-scripted .cinema__scene {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.cinema.is-scripted .cinema__scene[aria-current='step'] {
+  opacity: 1;
+}
+/* a faded scene is its own stacking layer and would sit over the current one */
+.cinema.is-scripted .cinema__scene:not([aria-current='step']) {
+  pointer-events: none;
+}
+.cinema.is-scripted .cinema__scene[aria-current='step'] {
+  position: relative;
+  z-index: 1;
+}
+
+.cinema.is-scripted .cinema__title {
+  font-size: clamp(1.6rem, 1rem + 1.6vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  max-width: 17ch;
+  text-wrap: balance;
+}
+[dir='rtl'] .cinema.is-scripted .cinema__title {
+  line-height: 1.4;
+}
+
+.section .cinema.is-scripted .cinema__line {
+  margin: 0.8rem 0 0;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  max-width: 30ch;
+}
+
+/* the case picker and the Today/Proposed toggle live here, in the last scene */
+.cinema__controls:empty {
+  display: none;
+}
+.cinema.is-scripted .cinema__controls {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+.cinema.is-scripted .cinema__scene:not([aria-current='step']) .cinema__controls {
+  visibility: hidden;
+}
+
+.cinema.is-scripted .cinema__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+.cinema__dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.cinema__dots i.is-on {
+  background: var(--page-text);
+  border-color: var(--page-text);
+}
+
+/* first in the stage for the keyboard; shown at its bottom corner */
+.cinema.is-scripted .cinema__skip {
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  inset-block-end: 24px;
+  inset-inline-end: 0;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  font-size: 0.95rem;
+  color: var(--page-text);
+}
+.cinema.is-scripted .cinema__skip:focus-visible {
+  outline: 3px solid var(--page-text);
+  outline-offset: 2px;
+}
+
+/* narrow screens: stacked, the phone above, its caption under it */
+@media (max-width: 59.99rem) {
+  .cinema.is-scripted .cinema__stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--band) minmax(0, 1fr) auto;
+    justify-items: center;
+    row-gap: 12px;
+    padding-block-end: 12px;
+  }
+  .cinema.is-scripted .cinema__phone {
+    grid-row: 2;
+    align-self: center;
+  }
+  .cinema.is-scripted .cinema__caption {
+    grid-row: 3;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .cinema.is-scripted .cinema__badge {
+    min-height: 1.75rem;
+    font-size: 0.85rem;
+  }
+  .cinema.is-scripted .cinema__title {
+    font-size: 1.3rem;
+    max-width: none;
+  }
+  .section .cinema.is-scripted .cinema__line {
+    margin-top: 0.3rem;
+    font-size: 1rem;
+    max-width: none;
+  }
+  .cinema.is-scripted .cinema__controls {
+    margin-top: 0.6rem;
+  }
+  .cinema.is-scripted .cinema__skip {
+    inset-block-end: 12px;
+  }
+}
+
+/* at 480px and below the phone is frameless; in the story it gets a fixed
+   height that fills the room left under the caption (cinema.js) */
+@media (max-width: 480px) {
+  .cinema.is-scripted .phone__screen {
+    height: var(--screen-h, 640px);
+    min-height: 0;
+    border-radius: 22px;
+  }
+  .cinema.is-scripted .phone__body {
+    overflow-y: auto;
+  }
+}
+
+/* the header in cinema: it slides up and away; the hairline stays at the top edge */
+.js .site-header {
+  transition: transform 0.32s var(--ease);
+}
+.js .hdr__inner {
+  transition: opacity 0.25s ease;
+}
+.js .hdr__progress {
+  transition: transform 0.32s var(--ease);
+}
+.js .site-header.is-cinema {
+  transform: translateY(-100%);
+}
+.js .site-header.is-cinema .hdr__inner,
+.js .site-header.is-cinema::before {
+  opacity: 0;
+}
+.js .site-header.is-cinema .hdr__progress {
+  transform: translateY(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .site-header,
+  .js .hdr__inner,
+  .js .hdr__progress {
+    transition: none;
+  }
+}
+
+/* the controls, compact under the phone on narrow screens: the three cases by
+   name in one row (their one-line sources are in the cases section below) */
+@media (max-width: 59.99rem) {
+  .cinema.is-scripted .cinema__controls {
+    justify-items: stretch;
+    gap: 0.5rem;
+  }
+  .cinema.is-scripted .cinema__controls .scenarios {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
+    gap: 6px;
+  }
+  .cinema.is-scripted .cinema__controls .scenarios__item {
+    min-height: 44px;
+    justify-content: center;
+    padding: 0.35rem 0.5rem;
+  }
+  .cinema.is-scripted .cinema__controls .scenarios__sub {
+    display: none;
+  }
+  .cinema.is-scripted .cinema__controls .toggle {
+    justify-self: start;
+  }
+}
+
+/* after the first look: the dots join the badge row (they were floating far
+   under the text), and on narrow screens the skip link moves to the top band
+   and the last scene keeps its title and controls only, so the phone gets the
+   room (with the caption reserving space for the controls, scene 1 hid Buy) */
+.cinema.is-scripted .cinema__caption {
+  grid-template-columns: auto 1fr;
+  column-gap: 1rem;
+}
+.cinema.is-scripted .cinema__badge {
+  grid-column: 1;
+  grid-row: 1;
+}
+.cinema.is-scripted .cinema__dots {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+}
+.cinema.is-scripted .cinema__scenes {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+@media (max-width: 59.99rem) {
+  .cinema.is-scripted .cinema__skip {
+    inset-block-end: auto;
+    top: calc((var(--band) - 44px) / 2);
+  }
+  .cinema.is-scripted .cinema__scene:last-child .cinema__line {
+    display: none;
+  }
+}
+
+/* on the bright page the frameless phone is the page's own colour: give it an edge */
+@media (max-width: 480px) {
+  .cinema.is-scripted .phone__screen {
+    box-shadow: 0 0 0 1px rgba(26, 25, 25, 0.22);
+  }
 }

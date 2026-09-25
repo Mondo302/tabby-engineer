@@ -67,6 +67,12 @@ async function open(path = '', opts = {}) {
   // By default it is blocked, so every other check sees the HTML phone, which
   // is what they were written for, and never races a swap.
   const { init, viewport = { width: 1280, height: 900 }, flutter = false, ...ctxOpts } = opts;
+  // The swap checks below test phone.js's own machinery. With the scroll-driven
+  // cinema live, the swap needs a script hook the current Flutter build does not
+  // have yet (kept-html:no-script-hook, tested in the cinema section), so unless a
+  // check asks otherwise they run against the static section (reduced motion),
+  // where the swap works exactly as before.
+  if (flutter && ctxOpts.reducedMotion === undefined) ctxOpts.reducedMotion = 'reduce';
   const ctx = await browser.newContext({ viewport, ...ctxOpts });
   if (init) await ctx.addInitScript(init);
   if (!flutter) await ctx.route('**/flutter_bootstrap.js', (r) => r.abort());
@@ -1778,6 +1784,11 @@ for (const theme of ['dark', 'bright']) {
 // (flt-semantics, the real DOM nodes a screen reader gets) and what it looks
 // like from screenshot pixels.
 const STAGE = '#prototype-stage';
+// These checks test the swap machinery itself. While the scroll story (cinema) is
+// live the swap also needs a script hook and the phone is locked (inert) in
+// scenes 1-7, both tested in the cinema section; so they run against the static
+// section (reduced motion), where the swap behaves exactly as it always has.
+const SWAP_MOTION = 'reduce';
 const swapped = async (p, ms = 60000) => {
   try {
     await p.waitForFunction(() => document.getElementById('prototype-stage').dataset.phoneStatus === 'flutter', null, { timeout: ms });
@@ -1867,7 +1878,7 @@ await test('phone (flutter): loads and paints inside the page, then swaps in ove
 });
 
 await test('phone (flutter): the swap moves nothing (geometry equal, layout-shift score zero)', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => {
     window.__shifts = [];
     new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__shifts.push({ t: e.startTime, v: e.value, input: e.hadRecentInput }); })
@@ -1909,7 +1920,7 @@ for (const [what, pattern, wasmOff, expected] of [
   ['canvaskit/skwasm.wasm (the loader hangs; the timeout ends it)', '**/canvaskit/skwasm.wasm', false, 'timeout'],
 ]) {
   await test(`phone (flutter): blocked ${what} keeps the HTML phone and the page works`, async () => {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
     await ctx.addInitScript((off) => {
       window.PHONE_OPTIONS = { timeoutMs: 9000 };
       if (off) WebAssembly.validate = () => false; // Flutter reads this to choose the JS build
@@ -1934,7 +1945,7 @@ for (const [what, pattern, wasmOff, expected] of [
 }
 
 await test('phone (flutter): a load that takes longer than the limit is abandoned, and the HTML phone stays', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
   await ctx.addInitScript(() => { window.PHONE_OPTIONS = { timeoutMs: 3000 }; });
   // the engine file arrives after the limit
   await ctx.route('**/main.dart.wasm', async (r) => { await new Promise((ok) => setTimeout(ok, 7000)); await r.continue(); });
@@ -1967,7 +1978,7 @@ for (const [what, script] of [
   ['no WebAssembly', () => { delete window.WebAssembly; }],
 ]) {
   await test(`phone (flutter): ${what} keeps the HTML phone and never requests the Flutter files`, async () => {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
     await ctx.addInitScript(script);
     const seen = [];
     const p = await ctx.newPage();
@@ -1997,7 +2008,7 @@ await test('phone (flutter): a narrow screen (390) keeps the HTML phone; widenin
 });
 
 await test('phone (flutter): touching the HTML phone before the swap keeps it (and its state)', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 1000 } });
   // hold the loader back so there is time to act before Flutter is ready
   await ctx.route('**/flutter_bootstrap.js', async (r) => { await new Promise((ok) => setTimeout(ok, 4500)); await r.continue(); });
   const p = await ctx.newPage();
@@ -2019,7 +2030,7 @@ await test('phone (flutter): touching the HTML phone before the swap keeps it (a
 });
 
 await test('phone (flutter): keyboard focus in the HTML phone also keeps it', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 1000 } });
   await ctx.route('**/flutter_bootstrap.js', async (r) => { await new Promise((ok) => setTimeout(ok, 4500)); await r.continue(); });
   const p = await ctx.newPage();
   await p.goto(BASE, { waitUntil: 'load' });
@@ -2033,7 +2044,7 @@ await test('phone (flutter): keyboard focus in the HTML phone also keeps it', as
 });
 
 await test('phone (flutter): exactly one phone is exposed to assistive technology, before and after the swap', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 1100 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 1100 } });
   await ctx.route('**/flutter_bootstrap.js', async (r) => { await new Promise((ok) => setTimeout(ok, 1500)); await r.continue(); });
   const p = await ctx.newPage();
   await p.goto(BASE, { waitUntil: 'load' });
@@ -2054,7 +2065,7 @@ await test('phone (flutter): exactly one phone is exposed to assistive technolog
 });
 
 await test('phone (flutter): pressing Tab before the swap keeps the HTML phone (its buttons are the ones a keyboard reaches)', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 1000 } });
   await ctx.route('**/flutter_bootstrap.js', async (r) => { await new Promise((ok) => setTimeout(ok, 3500)); await r.continue(); });
   const p = await ctx.newPage();
   await p.goto(BASE, { waitUntil: 'load' });
@@ -2156,7 +2167,7 @@ for (const [start, next] of [['dark', 'bright'], ['bright', 'dark']]) {
 }
 
 await test('privacy: zero third-party requests across the whole load, Flutter included', async () => {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
   const seen = [];
   ctx.on('request', (r) => seen.push(r.url()));
   const p = await ctx.newPage();
@@ -2175,7 +2186,7 @@ await test('privacy: zero third-party requests across the whole load, Flutter in
 
 await test('console: no errors and no failed requests across the whole load, Flutter included, both languages', async () => {
   for (const lang of ['', '?lang=ar']) {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const ctx = await browser.newContext({ reducedMotion: SWAP_MOTION, viewport: { width: 1280, height: 900 } });
     const bad = [];
     const p = await ctx.newPage();
     p.on('console', (m) => { if (m.type() === 'error') bad.push('console: ' + m.text()); });
@@ -2220,7 +2231,8 @@ await test('motion: the swap fades in about a third of a second, and not at all 
     const t = (s) => getComputedStyle(document.querySelector(s)).transitionDuration;
     return [t('#phone-host'), t('#prototype-root')];
   });
-  const a = await open('', { flutter: true, viewport: { width: 1280, height: 900 } });
+  // Normal motion means the cinema is live, so the swap needs the script hook; a stub stands in for it.
+  const a = await open('', { flutter: true, viewport: { width: 1280, height: 900 }, reducedMotion: 'no-preference', init: () => { window.setPhoneScreen = () => {}; window.setPhoneControls = () => {}; } });
   await swapped(a);
   const on = await dur(a);
   assert(on.every((d) => /^0\.3\d*s/.test(d)), 'normal motion: ' + on);
@@ -2230,6 +2242,466 @@ await test('motion: the swap fades in about a third of a second, and not at all 
   const off = await dur(b);
   assert(off.every((d) => /^0s/.test(d)), 'reduced motion: ' + off);
   await done(b);
+});
+
+// ------------------------------------------------------------- cinema -----
+// The phone plays her case as the visitor scrolls: a tall block with a pinned
+// stage (position: sticky, no scroll-jacking), the header retracting while it is
+// pinned, narration beside the phone. Everything here uses real wheel scrolling
+// where it claims a scene, because the director reads scroll position only.
+const SCENE_STATES = [
+  { mode: 'today', screens: ['tab'], tab: 'nav.shop' },
+  { mode: 'today', screens: ['checkout'] },
+  { mode: 'today', screens: ['processing', 'decline'] }, // the phone's own 1.4 s timer may already have moved on
+  { mode: 'today', screens: ['decline'] },
+  { mode: 'proposed', screens: ['decline'] },
+  { mode: 'proposed', screens: ['limit'] },
+  { mode: 'proposed', screens: ['recovery'] },
+  { mode: 'proposed', screens: ['tab'], tab: 'nav.shop' },
+];
+const sceneY = (p, n) => p.evaluate((i) => {
+  const beat = document.querySelectorAll('.cinema__beat')[i - 1];
+  if (!beat) throw new Error('no beat ' + i);
+  return Math.round(beat.getBoundingClientRect().top + window.scrollY + 3);
+}, n);
+const wheelTo = async (p, y) => {
+  await p.mouse.move(640, 400);
+  for (let i = 0; i < 120; i += 1) {
+    const cur = await p.evaluate(() => window.scrollY);
+    const d = y - cur;
+    if (Math.abs(d) <= 1) break;
+    await p.mouse.wheel(0, Math.max(-300, Math.min(300, d)));
+    await p.waitForTimeout(35);
+  }
+  await p.waitForTimeout(250);
+};
+const wheelToScene = async (p, n) => wheelTo(p, await sceneY(p, n));
+const phoneState = (p) => p.evaluate(() => window.PROTOTYPE.state);
+const activeScene = (p) => p.evaluate(() => [...document.querySelectorAll('.cinema__scene')].findIndex((li) => li.getAttribute('aria-current') === 'step') + 1);
+// the header slides in about 0.3s; read it once that has finished
+const hdr = async (p) => { await p.waitForTimeout(450); return hdrNow(p); };
+const hdrNow = (p) => p.evaluate(() => {
+  const h = document.querySelector('.site-header');
+  const inner = document.querySelector('.hdr__inner').getBoundingClientRect();
+  const bar = document.querySelector('.hdr__progress').getBoundingClientRect();
+  let op = 1;
+  for (let n = document.querySelector('.hdr__progress'); n; n = n.parentElement) op *= Number(getComputedStyle(n).opacity);
+  return { cinema: h.classList.contains('is-cinema'), innerTop: inner.top, innerBottom: inner.bottom, innerOpacity: Number(getComputedStyle(document.querySelector('.hdr__inner')).opacity), barTop: bar.top, barH: bar.height, barOpacity: op };
+});
+const hidden = (h) => h.cinema && h.innerBottom <= 1 && h.innerOpacity < 0.05;
+const shown = (h) => !h.cinema && h.innerTop >= -0.5 && h.innerOpacity > 0.95;
+
+await test('cinema: each scene sets its state on the HTML phone by real scrolling, in both directions', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  assert(await p.$('.cinema.is-scripted'), 'the cinema is not live');
+  assert((await p.$$('.cinema__scene')).length === 8, 'expected 8 scenes');
+  const bad = [];
+  const check = async (n, dir) => {
+    const s = await phoneState(p);
+    const want = SCENE_STATES[n - 1];
+    const ok = s.mode === want.mode && want.screens.includes(s.screen) && (!want.tab || s.tab === want.tab) && s.scenarioId === 'silent-block';
+    if (!ok || (await activeScene(p)) !== n) bad.push(`${dir} scene ${n}: ${JSON.stringify(s)} caption ${await activeScene(p)}`);
+  };
+  for (let n = 1; n <= 8; n += 1) { await wheelToScene(p, n); await check(n, 'down'); }
+  for (let n = 7; n >= 1; n -= 1) { await wheelToScene(p, n); await check(n, 'up'); }
+  assert(bad.length === 0, bad.join(' | '));
+  assert(p.errors.length === 0, p.errors.join('; '));
+  await done(p);
+});
+
+await test('cinema: no scroll-jacking (no scroll-snap, position: sticky, wheel and touch listeners never cancel)', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  const r = await p.evaluate(async () => {
+    const st = getComputedStyle(document.querySelector('.cinema__stage'));
+    const snap = getComputedStyle(document.documentElement).scrollSnapType + '/' + getComputedStyle(document.body).scrollSnapType;
+    let prevented = false;
+    const y0 = window.scrollY;
+    const probe = new WheelEvent('wheel', { deltaY: 120, cancelable: true, bubbles: true });
+    document.querySelector('.cinema__stage').dispatchEvent(probe);
+    prevented = probe.defaultPrevented;
+    const t = new Event('touchmove', { cancelable: true, bubbles: true });
+    document.querySelector('.cinema__stage').dispatchEvent(t);
+    return { pos: st.position, snap, prevented, touchPrevented: t.defaultPrevented, y0 };
+  });
+  assert(r.pos === 'sticky', 'stage position ' + r.pos);
+  assert(/^none\/none$/.test(r.snap), 'scroll-snap ' + r.snap);
+  assert(!r.prevented && !r.touchPrevented, 'a wheel or touch event was cancelled');
+  await done(p);
+});
+
+await test('cinema: the header retracts while the stage is pinned, keeps its hairline, and returns on scroll-up, focus, Escape and after the last scene', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  assert(shown(await hdr(p)), 'header not shown at the top');
+  await wheelToScene(p, 4);
+  let h = await hdr(p);
+  assert(hidden(h), 'not retracted in the stage ' + JSON.stringify(h));
+  assert(h.barTop <= 3 && h.barH >= 1.5 && h.barOpacity > 0.95, 'hairline not visible at the top edge ' + JSON.stringify(h));
+  // scroll up a little: it comes back
+  await wheelTo(p, (await p.evaluate(() => window.scrollY)) - 200);
+  h = await hdr(p);
+  assert(shown(h), 'not back on scroll-up ' + JSON.stringify(h));
+  // scroll down again: it leaves again
+  await wheelTo(p, (await p.evaluate(() => window.scrollY)) + 400);
+  h = await hdr(p);
+  assert(hidden(h), 'did not retract again on scroll-down ' + JSON.stringify(h));
+  // keyboard focus in a header control brings it back
+  // focus without letting the browser scroll it into view (a scroll-up alone would also bring it back)
+  await p.evaluate(() => document.getElementById('theme-btn').focus({ preventScroll: true }));
+  await p.waitForTimeout(200);
+  h = await hdr(p);
+  assert(shown(h), 'not back on focus ' + JSON.stringify(h));
+  await p.evaluate(() => document.activeElement.blur());
+  await wheelTo(p, (await p.evaluate(() => window.scrollY)) + 300);
+  assert(hidden(await hdr(p)), 'did not retract after blur');
+  // Escape brings it back
+  await p.keyboard.press('Escape');
+  await p.waitForTimeout(200);
+  assert(shown(await hdr(p)), 'not back on Escape');
+  // after the last scene the block is left and the header is simply the header
+  await p.evaluate(() => { const b = document.getElementById('ending').getBoundingClientRect(); window.scrollTo(0, b.top + scrollY - 100); });
+  await p.waitForTimeout(400);
+  assert(shown(await hdr(p)), 'not back after the cinema ' + JSON.stringify(await hdr(p)));
+  await done(p);
+});
+
+await test('cinema: during the scenes the phone is not clickable and the case picker and Today/Proposed toggle are hidden', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  for (const n of [1, 4, 6]) {
+    await wheelToScene(p, n);
+    const r = await p.evaluate(() => {
+      const stage = document.getElementById('prototype-stage');
+      const ph = document.querySelector('.phone').getBoundingClientRect();
+      const hit = document.elementFromPoint(ph.x + ph.width / 2, ph.y + ph.height / 2);
+      const vis = (sel) => [...document.querySelectorAll(sel)].some((e) => { const s = getComputedStyle(e); const r = e.getBoundingClientRect(); return s.visibility !== 'hidden' && s.display !== 'none' && r.width > 0 && !e.closest('[inert]'); });
+      return { inert: stage.inert, pe: getComputedStyle(stage).pointerEvents, hitInside: !!(hit && hit.closest('#prototype-stage')), toggle: vis('.toggle'), picker: vis('.scenarios'), ah: stage.getAttribute('aria-hidden') };
+    });
+    assert(r.inert && r.pe === 'none' && !r.hitInside, `scene ${n}: phone clickable ${JSON.stringify(r)}`);
+    assert(!r.toggle && !r.picker, `scene ${n}: controls visible ${JSON.stringify(r)}`);
+    assert(r.ah === 'true', `scene ${n}: phone exposed to assistive tech`);
+  }
+  await done(p);
+});
+
+// A real pointer press at the element's centre. Playwright's own click first scrolls
+// the element into view, and any page scroll here (by design) moves the story.
+const tap = async (p, sel, i) => {
+  const b = await p.locator(sel).nth(i).boundingBox();
+  if (!b) throw new Error('not rendered: ' + sel);
+  await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await p.waitForTimeout(150);
+};
+
+await test('cinema: scene 8 unlocks the phone and its controls, and they work', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  await wheelToScene(p, 8);
+  const r = await p.evaluate(() => {
+    const stage = document.getElementById('prototype-stage');
+    return { inert: stage.inert, ah: stage.getAttribute('aria-hidden'), pe: getComputedStyle(stage).pointerEvents };
+  });
+  assert(!r.inert && r.ah === null && r.pe !== 'none', 'phone still locked ' + JSON.stringify(r));
+  assert(await p.locator('.toggle').isVisible() && await p.locator('.scenarios').isVisible(), 'controls not visible');
+  await tap(p, '.toggle__btn', 0); // Today
+  assert((await phoneState(p)).mode === 'today', 'Today did not switch the phone');
+  await tap(p, '.scenarios__item', 1);
+  assert((await phoneState(p)).scenarioId !== 'silent-block', 'the case picker did nothing');
+  await tap(p, '.tabbar__item', 1);
+  await tap(p, '.btn--primary', 0); // Buy
+  assert((await phoneState(p)).screen === 'checkout', 'Buy did not reach the checkout');
+  // scrolling back into the story locks it again and returns to her case
+  await wheelToScene(p, 5);
+  const s = await phoneState(p);
+  assert(s.scenarioId === 'silent-block' && s.mode === 'proposed' && s.screen === 'decline', 'scene 5 after free play: ' + JSON.stringify(s));
+  assert(await p.evaluate(() => document.getElementById('prototype-stage').inert), 'phone not locked again');
+  await done(p);
+});
+
+await test('cinema: English and Arabic narration exist for every scene, no TODO_AR, and render in both languages', async () => {
+  const keys = ['cinema.skip', 'cinema.label', 'cinema.modeToday', 'cinema.modeProposed'];
+  for (let n = 1; n <= 8; n += 1) keys.push(`cinema.s${n}.title`, `cinema.s${n}.text`);
+  for (const lang of ['en', 'ar']) {
+    const p = await open(lang === 'ar' ? '?lang=ar' : '', { viewport: { width: 1280, height: 800 } });
+    const r = await p.evaluate((ks) => {
+      const out = { missing: [], todo: [], wrongScript: [], rendered: [] };
+      for (const l of ['en', 'ar']) for (const k of ks) {
+        const v = window.STRINGS[l][k];
+        if (!v) out.missing.push(l + ':' + k);
+        else if (/TODO_AR/.test(v)) out.todo.push(l + ':' + k);
+        else if (l === 'ar' && !/[؀-ۿ]/.test(v)) out.wrongScript.push(l + ':' + k);
+        else if (l === 'en' && /[؀-ۿ]/.test(v)) out.wrongScript.push(l + ':' + k);
+      }
+      const lis = [...document.querySelectorAll('.cinema__scene')];
+      for (let i = 0; i < lis.length; i += 1) {
+        out.rendered.push([lis[i].querySelector('.cinema__title').textContent.trim() === window.STRINGS[document.documentElement.lang.slice(0, 2)]['cinema.s' + (i + 1) + '.title'],
+          lis[i].querySelector('.cinema__line').textContent.trim() === window.STRINGS[document.documentElement.lang.slice(0, 2)]['cinema.s' + (i + 1) + '.text']]);
+      }
+      out.count = lis.length;
+      out.skip = document.querySelector('.cinema__skip').textContent.trim();
+      return out;
+    }, keys);
+    assert(r.missing.length === 0, 'missing ' + r.missing.join(','));
+    assert(r.todo.length === 0, 'TODO_AR in ' + r.todo.join(','));
+    assert(r.wrongScript.length === 0, 'wrong script ' + r.wrongScript.join(','));
+    assert(r.count === 8 && r.rendered.every((x) => x[0] && x[1]), lang + ' rendered narration differs from strings.js');
+    assert(r.skip.length > 3 && !/TODO/.test(r.skip), 'skip link text ' + r.skip);
+    await done(p);
+  }
+});
+
+await test('cinema: the phone sits at the inline-start (left in English, right in Arabic) and the narration at the inline-end', async () => {
+  for (const [lang, want] of [['', 'ltr'], ['?lang=ar', 'rtl']]) {
+    const p = await open(lang, { viewport: { width: 1280, height: 800 } });
+    await wheelToScene(p, 4);
+    const g = await p.evaluate(() => {
+      const c = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return { l: r.left, r: r.right, cx: r.left + r.width / 2 }; };
+      return { dir: document.documentElement.dir, phone: c('.phone'), cap: c('.cinema__caption') };
+    });
+    assert(g.dir === want, 'dir ' + g.dir);
+    if (want === 'ltr') assert(g.phone.cx < g.cap.cx && g.phone.l < 640 && g.phone.r <= g.cap.l + 1, 'EN geometry ' + JSON.stringify(g));
+    else assert(g.phone.cx > g.cap.cx && g.phone.r > 640 && g.phone.l >= g.cap.r - 1, 'AR geometry ' + JSON.stringify(g));
+    await done(p);
+  }
+});
+
+await test('cinema: the whole phone fits the viewport while pinned (1280x800 side by side, 390x800 stacked with its caption)', async () => {
+  for (const [w, h] of [[1280, 800], [1440, 720], [390, 800], [360, 640]]) {
+    const p = await open('', { viewport: { width: w, height: h } });
+    for (const n of [1, 5, 8]) {
+      await wheelToScene(p, n);
+      const g = await p.evaluate(() => {
+        const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return { t: b.top, b: b.bottom, l: b.left, r: b.right }; };
+        return { phone: r('.phone'), cap: r('.cinema__caption'), vh: innerHeight, vw: innerWidth };
+      });
+      assert(g.phone.t >= -1 && g.phone.b <= g.vh + 1 && g.phone.l >= -1 && g.phone.r <= g.vw + 1, `${w}x${h} scene ${n}: phone outside the viewport ${JSON.stringify(g)}`);
+      assert(g.cap.b <= g.vh + 1 && g.cap.t >= -1, `${w}x${h} scene ${n}: caption outside the viewport ${JSON.stringify(g.cap)}`);
+      if (w < 960) assert(g.phone.b <= g.cap.t + 2, `${w}x${h}: caption overlaps the phone ${JSON.stringify(g)}`);
+    }
+    await done(p);
+  }
+});
+
+await test('cinema: no sideways scroll at 360, 390, 768 and 1280, both languages and themes, in scenes 1, 4 and 8', async () => {
+  const bad = [];
+  for (const width of [360, 390, 768, 1280]) for (const lang of ['', '?lang=ar']) for (const theme of ['dark', 'bright']) {
+    const p = await open(lang, { viewport: { width, height: 800 }, init: `localStorage.setItem('ti-theme','${theme}')` });
+    for (const n of [1, 4, 8]) {
+      await scrollTo(p, await sceneY(p, n));
+      const w = await p.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+      if (w[0] > w[1]) bad.push(`${width}/${lang || 'en'}/${theme}/scene ${n}: ${w[0]}>${w[1]}`);
+    }
+    await done(p);
+  }
+  assert(bad.length === 0, bad.join(', '));
+});
+
+for (const theme of ['dark', 'bright']) {
+  await test(`cinema (${theme}): narration and the Today/Proposed badge reach 4.5:1, and the badge flips coral to green`, async () => {
+    const seen = {};
+    for (const lang of ['', '?lang=ar']) {
+      const p = await open(lang, { viewport: { width: 1280, height: 800 }, init: `localStorage.setItem('ti-theme','${theme}')` });
+      for (const n of [1, 4, 5, 7, 8]) {
+        await scrollTo(p, await sceneY(p, n));
+        await p.waitForTimeout(700); // the caption crossfade and the badge colour finish
+        const row = await p.evaluate(() => {
+          const parse = (s) => s.match(/[\d.]+/g).map(Number);
+          const effBg = (el) => { for (let x = el; x; x = x.parentElement) { const c = parse(getComputedStyle(x).backgroundColor); if (c.length === 3 || c[3] > 0.99) return c.slice(0, 3); } return [255, 255, 255]; };
+          const li = document.querySelector('.cinema__scene[aria-current="step"]');
+          const badge = document.querySelector('.cinema__badge');
+          const one = (el) => ({ fg: parse(getComputedStyle(el).color).slice(0, 3), bg: effBg(el), op: Number(getComputedStyle(el).opacity) });
+          return { title: one(li.querySelector('.cinema__title')), line: one(li.querySelector('.cinema__line')), badge: one(badge), badgeText: badge.textContent.trim(), badgeVisible: getComputedStyle(badge).visibility !== 'hidden' };
+        });
+        for (const part of ['title', 'line']) assert(ratio(row[part].fg, row[part].bg) >= 4.5 && row[part].op > 0.95, `${lang || 'en'} scene ${n} ${part} ${ratio(row[part].fg, row[part].bg).toFixed(2)}`);
+        if (n !== 8) {
+          assert(row.badgeVisible && row.badgeText.length > 0, `scene ${n}: no badge`);
+          assert(ratio(row.badge.fg, row.badge.bg) >= 4.5, `${lang || 'en'} scene ${n} badge ${ratio(row.badge.fg, row.badge.bg).toFixed(2)}`);
+          seen[(lang ? 'ar' : 'en') + n] = row.badge.fg.join();
+        }
+      }
+      await done(p);
+    }
+    assert(seen.en4 !== seen.en5, 'the badge colour did not change between Today and Proposed');
+    assert(seen.en1 === seen.en4 && seen.en5 === seen.en7, 'the badge colour does not follow the mode');
+    assert(seen.ar4 === seen.en4 && seen.ar5 === seen.en5, 'the Arabic badge colours differ');
+  });
+}
+
+await test('cinema: only opacity and transform animate in the cinema (no layout property in any transition)', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  assert(await p.$('.cinema.is-scripted .cinema__caption'), 'the cinema is not live');
+  await wheelToScene(p, 4);
+  const bad = await p.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll('.cinema, .cinema *, .site-header, .site-header *')) {
+      const s = getComputedStyle(el);
+      const props = s.transitionProperty.split(',').map((x) => x.trim());
+      const dur = s.transitionDuration.split(',').map((x) => parseFloat(x));
+      props.forEach((pr, i) => { if (dur[i % dur.length] > 0 && /^(all|width|height|top|left|right|bottom|margin.*|padding.*|inset.*|font.*|line-height|letter-spacing)$/.test(pr)) out.push((el.className || el.tagName) + ': ' + pr); });
+    }
+    return out;
+  });
+  assert(bad.length === 0, bad.slice(0, 6).join(' | '));
+  await done(p);
+});
+
+for (const opts of [{ reducedMotion: 'reduce' }, { javaScriptEnabled: false }]) {
+  const what = opts.reducedMotion ? 'reduced motion' : 'JavaScript off';
+  await test(`cinema (${what}): the section is static, every scene reads in order, the header never retracts`, async () => {
+    const p = await open('', { ...opts, viewport: { width: 1280, height: 800 } });
+    const r = await p.evaluate(() => {
+      const c = document.getElementById('cinema');
+      const lis = [...document.querySelectorAll('.cinema__scene')];
+      const vis = lis.map((li) => { const s = getComputedStyle(li); const b = li.getBoundingClientRect(); return s.visibility !== 'hidden' && s.display !== 'none' && Number(s.opacity) === 1 && b.height > 10; });
+      const tops = lis.map((li) => li.getBoundingClientRect().top);
+      const skip = document.querySelector('.cinema__skip');
+      const stage = document.querySelector('.cinema__stage');
+      return {
+        scripted: c.classList.contains('is-scripted'), n: lis.length, allVisible: vis.every(Boolean), inOrder: tops.every((t, i) => i === 0 || t > tops[i - 1]),
+        skipShown: skip ? getComputedStyle(skip).display !== 'none' : false, stagePos: getComputedStyle(stage).position,
+        beats: getComputedStyle(document.querySelector('.cinema__beats')).display, text: lis.map((li) => li.textContent.replace(/\s+/g, ' ').trim()).join(' ').length,
+      };
+    });
+    assert(!r.scripted, 'the cinema went live');
+    assert(r.n === 8 && r.allVisible && r.inOrder, 'scenes not all readable in order ' + JSON.stringify(r));
+    assert(!r.skipShown && r.stagePos !== 'sticky' && r.beats === 'none', 'cinema chrome present in the static section ' + JSON.stringify(r));
+    assert(r.text > 200, 'scene text missing');
+    if (opts.reducedMotion) {
+      const s = await p.evaluate(() => ({ st: window.PROTOTYPE.state, inert: document.getElementById('prototype-stage').inert, toggle: !!document.querySelector('#prototype-root .toggle'), picker: !!document.querySelector('#prototype-root .scenarios'), host: document.getElementById('cinema-controls').hasAttribute('data-live') }));
+      assert(s.st.mode === 'proposed' && s.st.screen === 'tab' && !s.inert && s.toggle && s.picker && !s.host, 'phone not in its final proposed state with controls ' + JSON.stringify(s));
+    }
+    await scrollTo(p, await p.evaluate(() => document.getElementById('cinema').getBoundingClientRect().top + scrollY + 200));
+    await scrollTo(p, (await p.evaluate(() => scrollY)) + 400);
+    assert(!(await p.evaluate(() => document.querySelector('.site-header').classList.contains('is-cinema'))), 'header retracted');
+    await done(p);
+  });
+}
+
+await test('phone: the one button with nothing behind it (the Today screen "Got it") is marked disabled and has no pointer affordance', async () => {
+  const p = await open('', { reducedMotion: 'reduce' });
+  await p.evaluate(() => window.PROTOTYPE.set({ mode: 'today', screen: 'decline' }));
+  const b = await p.evaluate(() => {
+    const el = document.querySelector('.screen--today button');
+    return { dis: el.getAttribute('aria-disabled'), type: el.type, cursor: getComputedStyle(el).cursor, n: document.querySelectorAll('.screen--today button').length };
+  });
+  assert(b.n === 1 && b.dis === 'true' && b.type === 'button' && b.cursor === 'default', JSON.stringify(b));
+  await done(p);
+});
+
+await test('cinema: the Skip link is the first thing in the stage, reaches the ending and brings the header back', async () => {
+  const p = await open('', { viewport: { width: 1280, height: 800 } });
+  await wheelToScene(p, 2);
+  const box = await p.evaluate(() => { const a = document.querySelector('.cinema__skip'); const r = a.getBoundingClientRect(); return { w: r.width, h: r.height, first: document.querySelector('.cinema__stage').firstElementChild === a, href: a.getAttribute('href'), top: r.top }; });
+  assert(box.first && box.href === '#ending' && box.w >= 44 && box.h >= 44 && box.top >= 0, 'skip link ' + JSON.stringify(box));
+  await p.click('.cinema__skip');
+  // the jump may be a smooth scroll: wait until it has stopped
+  let last = -1;
+  for (let i = 0; i < 40; i += 1) { await p.waitForTimeout(100); const now = await p.evaluate(() => window.scrollY); if (now === last) break; last = now; }
+  // the ending lifts in (a transform), so compare its layout position, not its painted one
+  const y = await p.evaluate(() => { let t = 0; for (let e = document.getElementById('ending'); e; e = e.offsetParent) t += e.offsetTop; return t - window.scrollY; });
+  assert(y < 300 && y > -300, 'did not reach the ending: ' + y);
+  assert(shown(await hdr(p)), 'header did not come back after the skip');
+  await done(p);
+});
+
+await test('cinema: the Flutter path drives the same scenes (mode before screen, its own controls always off: the caption drives it), recorded through a stub hook', async () => {
+  const p = await open('', {
+    viewport: { width: 1280, height: 800 },
+    init: () => {
+      window.__calls = [];
+      for (const n of ['setPhoneMode', 'setPhoneScenario', 'setPhoneScreen', 'setPhoneControls']) window[n] = (...a) => window.__calls.push([n, ...a]);
+    },
+  });
+  const bad = [];
+  const expected = [
+    ['today', 'tab', 'nav.shop', false], ['today', 'checkout', undefined, false], ['today', 'processing', undefined, false], ['today', 'decline', undefined, false],
+    ['proposed', 'decline', undefined, false], ['proposed', 'limit', undefined, false], ['proposed', 'recovery', undefined, false], ['proposed', 'tab', 'nav.shop', false],
+  ];
+  for (let n = 1; n <= 8; n += 1) {
+    await p.evaluate(() => { window.__calls.length = 0; });
+    await wheelToScene(p, n);
+    const calls = await p.evaluate(() => window.__calls);
+    const [mode, screen, tab, controls] = expected[n - 1];
+    const iMode = calls.findIndex((c) => c[0] === 'setPhoneMode' && c[1] === mode);
+    const iScreen = calls.findIndex((c) => c[0] === 'setPhoneScreen' && c[1] === screen && (tab === undefined || c[2] === tab));
+    const ctl = calls.filter((c) => c[0] === 'setPhoneControls').pop();
+    if (n === 1 && iScreen < 0 && iMode < 0) continue; // scene 1 is already showing when the page loads; its calls happen at start-up
+    if (iMode < 0 || iScreen < 0 || iMode > iScreen) bad.push(`scene ${n}: ${JSON.stringify(calls)}`);
+    if (!ctl || ctl[1] !== controls) bad.push(`scene ${n}: controls ${JSON.stringify(ctl)}`);
+  }
+  assert(bad.length === 0, bad.join(' | '));
+  const first = await p.evaluate(() => window.__calls.length);
+  assert(first > 0, 'nothing recorded');
+  await done(p);
+});
+
+await test('cinema: in the last scene the caption controls drive the Flutter phone (case, then mode) through the hooks', async () => {
+  const p = await open('', {
+    viewport: { width: 1280, height: 800 },
+    init: () => {
+      window.__calls = [];
+      for (const n of ['setPhoneMode', 'setPhoneScenario', 'setPhoneScreen', 'setPhoneControls']) window[n] = (...a) => window.__calls.push([n, ...a]);
+    },
+  });
+  await wheelToScene(p, 8);
+  await p.evaluate(() => { window.__calls.length = 0; });
+  const btn = p.locator('#cinema-controls .scenarios__item').nth(1);
+  const box = await btn.boundingBox();
+  await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await p.waitForTimeout(150);
+  let calls = await p.evaluate(() => window.__calls);
+  const iS = calls.findIndex((c) => c[0] === 'setPhoneScenario' && c[1] === 'new-account');
+  const iM = calls.findIndex((c) => c[0] === 'setPhoneMode' && c[1] === 'proposed');
+  assert(iS >= 0 && iM > iS, 'case pick not forwarded: ' + JSON.stringify(calls));
+  await p.evaluate(() => { window.__calls.length = 0; });
+  const today = p.locator('#cinema-controls .toggle__btn').first();
+  const tb = await today.boundingBox();
+  await p.mouse.click(tb.x + tb.width / 2, tb.y + tb.height / 2);
+  await p.waitForTimeout(150);
+  calls = await p.evaluate(() => window.__calls);
+  assert(calls.some((c) => c[0] === 'setPhoneMode' && c[1] === 'today'), 'mode not forwarded: ' + JSON.stringify(calls));
+  await done(p);
+});
+
+await test('cinema: the Flutter phone drives on start-up too (scene 1 pushed to the hooks before any scrolling)', async () => {
+  const p = await open('', {
+    viewport: { width: 1280, height: 800 },
+    init: () => {
+      window.__calls = [];
+      for (const n of ['setPhoneMode', 'setPhoneScenario', 'setPhoneScreen', 'setPhoneControls']) window[n] = (...a) => window.__calls.push([n, ...a]);
+    },
+  });
+  await p.waitForTimeout(500);
+  const calls = await p.evaluate(() => window.__calls);
+  assert(calls.some((c) => c[0] === 'setPhoneScreen' && c[1] === 'tab') && calls.some((c) => c[0] === 'setPhoneControls' && c[1] === false), JSON.stringify(calls));
+  await done(p);
+});
+
+await test('cinema (flutter): without a screen hook the HTML phone is kept (kept-html:no-script-hook); with one the swap goes ahead', async () => {
+  // An older Flutter build without the story hooks is simulated by refusing the
+  // assignment of setPhoneScreen (the synced build defines it at start-up).
+  const a = await open('', { flutter: true, reducedMotion: 'no-preference', viewport: { width: 1280, height: 900 }, init: () => { Object.defineProperty(window, 'setPhoneScreen', { configurable: true, get() { return undefined; }, set() {} }); } });
+  await settled(a);
+  assert((await phoneStatus(a)) === 'kept-html:no-script-hook', 'status without the hook: ' + (await phoneStatus(a)));
+  assert((await a.$eval(STAGE, (e) => e.dataset.engine)) === 'html', 'engine changed');
+  assert(await a.evaluate(() => document.getElementById('phone-host').getAttribute('aria-hidden') === 'true'), 'Flutter phone exposed');
+  await wheelToScene(a, 5);
+  assert((await phoneState(a)).screen === 'decline', 'the HTML phone stopped following the story');
+  await done(a);
+  const b = await open('', { flutter: true, reducedMotion: 'no-preference', viewport: { width: 1280, height: 900 }, init: () => { window.setPhoneScreen = () => {}; window.setPhoneControls = () => {}; } });
+  await swapped(b);
+  assert((await phoneStatus(b)) === 'flutter', 'status with the hook: ' + (await phoneStatus(b)));
+  await done(b);
+});
+
+await test('cinema (flutter, real build): the synced phone has the story hooks, swaps in, and its own controls stay off', async () => {
+  const p = await open('', { flutter: true, reducedMotion: 'no-preference', viewport: { width: 1280, height: 900 } });
+  await swapped(p);
+  assert((await phoneStatus(p)) === 'flutter', 'status ' + (await phoneStatus(p)));
+  const hooks = await p.evaluate(() => ['setPhoneScreen', 'setPhoneControls', 'setPhoneMode', 'setPhoneScenario'].map((n) => typeof window[n]));
+  assert(hooks.every((t) => t === 'function'), 'hooks ' + hooks);
+  await wheelToScene(p, 6);
+  await p.waitForTimeout(600);
+  const shot = await p.locator('#phone-host').screenshot();
+  assert(shot.length > 5000, 'Flutter phone did not paint');
+  await done(p);
 });
 
 await browser.close();

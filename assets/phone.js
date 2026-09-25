@@ -17,6 +17,9 @@
 //           pointer, not by Tab. So a visitor who has pressed Tab before the
 //           swap keeps the HTML phone.
 //   give up on a load error, or after 12 s: the HTML phone stays.
+//   story   while the scroll story is live (cinema.js), only a Flutter build
+//           with window.setPhoneScreen can follow it; without that hook the
+//           HTML phone stays (kept-html:no-script-hook).
 //   layout  the HTML phone is never removed from the layout. It is hidden
 //           (visibility, inert, aria-hidden) while Flutter, absolutely
 //           positioned over the same box, is shown. The stage keeps the HTML
@@ -183,6 +186,11 @@
     window.setTimeout(function () { enableSemantics(tries + 1); }, 250);
   }
 
+  function cinemaLive() {
+    var c = document.getElementById('cinema');
+    return !!(c && c.classList.contains('is-scripted'));
+  }
+
   function onReady() {
     if (settled) return;
     sync();
@@ -193,6 +201,10 @@
         if (interacted) return giveUp('interacted');
         if (keyboardUser) return giveUp('keyboard');
         if (narrow.matches) return giveUp('narrow');
+        // The scroll story (cinema.js) drives the phone screen by screen. A
+        // Flutter build without that hook could not follow it, so the HTML
+        // phone stays. Without the story (reduced motion) no hook is needed.
+        if (cinemaLive() && typeof window.setPhoneScreen !== 'function') return giveUp('no-script-hook');
         settled = true;
         window.clearTimeout(timer);
         show('flutter');
