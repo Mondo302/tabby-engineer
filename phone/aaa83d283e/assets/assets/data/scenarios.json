@@ -1,0 +1,105 @@
+[
+ {
+  "id": "silent-block",
+  "sourceKey": "source.silentBlock",
+  "reasonKey": "reason.paused",
+  "requested": 900,
+  "available": 0,
+  "planMonths": 4,
+  "facts": {
+   "accountAgeMonths": 14,
+   "completedPlans": 1,
+   "overdue": false
+  },
+  "recoveryPath": "time",
+  "nextReviewISO": "2026-11-14",
+  "alternatives": [
+   {
+    "key": "alt.remind"
+   }
+  ],
+  "event": {
+   "dateISO": "2026-08-14",
+   "textKey": "limit.eventPaused",
+   "causeKey": "cause.review"
+  },
+  "progress": null,
+  "restoreTo": 3000,
+  "recovery": {
+   "from": 0,
+   "to": 3000
+  }
+ },
+ {
+  "id": "new-account",
+  "sourceKey": "source.newAccount",
+  "recoveryPath": "payments",
+  "reasonKey": "reason.newAccount",
+  "requested": 2400,
+  "available": 1800,
+  "planMonths": 4,
+  "facts": {
+   "accountAgeMonths": 2,
+   "onTimePayments": 4,
+   "overdue": false
+  },
+  "nextReviewISO": "2026-10-14",
+  "alternatives": [
+   {
+    "key": "alt.splitPayment"
+   },
+   {
+    "key": "alt.longerPlan",
+    "months": 3
+   }
+  ],
+  "event": {
+   "dateISO": "2026-07-22",
+   "textKey": "limit.eventNew",
+   "causeKey": "cause.newAccount"
+  },
+  "progress": {
+   "done": 4,
+   "needed": 6
+  },
+  "restoreTo": 3000,
+  "recovery": {
+   "from": 1800,
+   "to": 3000
+  }
+ },
+ {
+  "id": "limit-cut",
+  "sourceKey": "source.limitCut",
+  "recoveryPath": "payments",
+  "reasonKey": "reason.recentReview",
+  "requested": 1200,
+  "available": 400,
+  "planMonths": 4,
+  "facts": {
+   "accountAgeMonths": 14,
+   "onTimePayments": 19,
+   "overdue": false
+  },
+  "nextReviewISO": "2026-10-02",
+  "alternatives": [
+   {
+    "key": "alt.smallerCart"
+   }
+  ],
+  "event": {
+   "dateISO": "2026-09-02",
+   "textKey": "limit.event",
+   "causeKey": "cause.usage"
+  },
+  "progress": {
+   "done": 1,
+   "needed": 4
+  },
+  "restoreTo": 1600,
+  "recovery": {
+   "from": 400,
+   "to": 1600
+  }
+ }
+]
