@@ -340,7 +340,7 @@ const CONTRAST_TARGETS = [
   ['#why-not li', 4.5, 'list body'],
   ['#who p', 4.5, 'who copy'],
   ['.hello__title', 3, 'Welcome (large)'],
-  ['.hello__lead', 4.5, 'This is my project'],
+  ['.hello__lead', 4.5, 'hello lead (the problem)'],
   ['.hello__cue', 4.5, 'scroll cue'],
   ['.welcome__title', 3, 'welcome title (large)'],
   ['.welcome__lead', 4.5, 'welcome lead'],
@@ -577,7 +577,8 @@ await test('opening: Welcome fills the first screen, then the design-project int
     assert(t.openingKids.join() === 'hello,welcome', 'opening children: ' + t.openingKids);
     assert(t.follows, 'the story does not follow the opening');
     assert(t.titleText === 'Welcome', 'title: ' + t.titleText);
-    assert(t.leadText === 'This is my project.', 'lead: ' + t.leadText);
+    // Screen 1 states the problem, not a preamble (cold-reader finding, 2026-09-28).
+    assert(/declines/.test(t.leadText) && /why/.test(t.leadText), 'lead should state the problem: ' + t.leadText);
     assert(Math.abs(t.hello.h - t.vh) <= 1 && t.hello.top <= 1, `${tag}: screen 1 is not one full viewport: ${t.hello.top}/${t.hello.h}`);
     assert(Math.abs(t.title.cx - t.vw / 2) <= 2, `${tag}: title not centred horizontally`);
     assert(Math.abs(t.title.cy - t.vh / 2) <= t.vh * 0.14, `${tag}: title not in the middle of the screen: ${t.title.cy} vs ${t.vh / 2}`);
@@ -901,7 +902,7 @@ await test('welcome: readable with JavaScript off, and the two links land on rea
     draw: [...document.querySelectorAll('.wcard__empty')].map((e) => getComputedStyle(e).transform),
     pos: getComputedStyle(document.querySelector('.hello')).position,
   }));
-  assert(/Welcome/.test(o.hello) && /This is my project\./.test(o.hello) && o.hello.trim().length > 0, 'opening text missing without JS: ' + o.hello);
+  assert(/Welcome/.test(o.hello) && /declines/.test(o.hello) && /why/.test(o.hello), 'opening text missing without JS: ' + o.hello);
   assert(o.names.length >= 3 && o.names.every((n) => n !== 'none'), 'the colour does not move without JS: ' + o.names);
   await p.waitForTimeout(3500);
   const late = await p.evaluate(() => ({
@@ -1020,6 +1021,9 @@ await test('pieces: the one-sentence fix sits in the intro sheet, ahead of the s
       return { text: el.textContent, want: window.STRINGS[L]['welcome.fix'], inSheet: !!el.closest('#welcome'), before: el.compareDocumentPosition(document.getElementById('pain')) & Node.DOCUMENT_POSITION_FOLLOWING };
     });
     assert(v.text === v.want && v.inSheet && v.before, lang + ' ' + JSON.stringify(v));
+    // The fix is the first thing after the title, ahead of the preamble.
+    const firstAfterTitle = await p.evaluate(() => document.querySelector('.welcome__title').nextElementSibling.className);
+    assert(/welcome__fix/.test(firstAfterTitle), lang + ' fix is not first after the title: ' + firstAfterTitle);
     if (!lang) assert(/say why/i.test(v.text) && /looked at again/i.test(v.text) && /one thing/i.test(v.text), 'the fix sentence lost a part: ' + v.text);
     await done(p);
   }
@@ -1149,6 +1153,7 @@ await test('no-JS: sections 1 and 2 copy is readable; unverified quotes stay out
     'Four tabs. Home, Shop, Payments, Profile.',
     'None of them shows your spending limit.',
     'About 9 of the 28 Trustpilot reviews',
+    'out of 2,024 in total, checked in September 2026',
     'the one number the app never shows you',
   ]) assert(text.includes(s), 'missing: ' + s);
   const vm = await import('node:vm');
