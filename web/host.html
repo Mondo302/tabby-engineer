@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Phone host</title>
+  <style>
+    body { margin: 0; padding: 24px; background: #f5f4f2; font: 16px system-ui, sans-serif; }
+    #phone-host { width: 390px; height: 802px; margin: 0 auto; position: relative; }
+    #phone-fallback { padding: 16px; border: 1px solid #bab6b3; border-radius: 16px; background: #fff; }
+  </style>
+</head>
+<body>
+  <div id="phone-host">
+    <p id="phone-fallback" hidden>The interactive phone could not load. The static version of this screen is shown instead.</p>
+  </div>
+  <script>
+    // ?h=NNN sizes the host (the phone plus the scenario picker and toggle need more than 802px).
+    var h = new URLSearchParams(location.search).get('h');
+    if (/^\d{3,4}$/.test(h || '')) document.getElementById('phone-host').style.height = h + 'px';
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+name: phone_view
+description: Phone prototype view.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: false
+  assets:
+    - assets/data/
+  fonts:
+    - family: PlexSans
+      fonts:
+        - asset: assets/fonts/plex-sans-400.woff2
+          weight: 400
+        - asset: assets/fonts/plex-sans-600.woff2
+          weight: 600
+    - family: PlexArabic
+      fonts:
+        - asset: assets/fonts/plex-arabic-400.woff2
+          weight: 400
+        - asset: assets/fonts/plex-arabic-600.woff2
+          weight: 600

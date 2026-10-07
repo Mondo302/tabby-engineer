@@ -1,0 +1,70 @@
+{
+ "merchants": [
+  {
+   "name": "Rawaa",
+   "tone": "a"
+  },
+  {
+   "name": "Najd Gold",
+   "tone": "b"
+  },
+  {
+   "name": "Falcon",
+   "tone": "c"
+  },
+  {
+   "name": "Mirqab",
+   "tone": "d"
+  },
+  {
+   "name": "Sahel",
+   "tone": "e"
+  },
+  {
+   "name": "Tamra",
+   "tone": "f"
+  },
+  {
+   "name": "Oud House",
+   "tone": "a"
+  },
+  {
+   "name": "Wasl Fit",
+   "tone": "c"
+  }
+ ],
+ "categories": [
+  {
+   "key": "cat.mobiles"
+  },
+  {
+   "key": "cat.electronics"
+  },
+  {
+   "key": "cat.travel"
+  },
+  {
+   "key": "cat.clothing"
+  },
+  {
+   "key": "cat.beauty"
+  },
+  {
+   "key": "cat.home"
+  }
+ ],
+ "product": {
+  "key": "product.phone",
+  "merchantIndex": 2
+ },
+ "profileRows": [
+  "profile.personal",
+  "profile.contact",
+  "profile.ratings",
+  "profile.favourites",
+  "profile.invite",
+  "profile.privacy",
+  "profile.language",
+  "profile.business"
+ ]
+}
