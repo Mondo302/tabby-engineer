@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Why was I declined?</title>
+    <meta
+      name="description"
+      content="An improvement to how a buy-now-pay-later app explains a declined purchase or a changed spending limit."
+    />
+    <script>
+      /* Runs before first paint: theme, language and direction are set here so
+         the page never flashes the wrong one. Dark is the default whatever
+         the OS says. ?lang=ar|en beats a saved choice; the browser's own
+         language is never consulted. Every storage read is guarded: the page
+         must work with storage blocked. Mirrored in assets/page.js. */
+      (function () {
+        var d = document.documentElement, theme = 'dark', lang = 'en', saved = null, asked = null;
+        try { var t = localStorage.getItem('ti-theme'); if (t === 'bright' || t === 'dark') theme = t; } catch (e) {}
+        try { saved = localStorage.getItem('ti-lang'); } catch (e) {}
+        try { asked = new URLSearchParams(location.search).get('lang'); } catch (e) {}
+        if (asked === 'ar' || asked === 'en') lang = asked;
+        else if (saved === 'ar' || saved === 'en') lang = saved;
+        d.setAttribute('data-theme', theme);
+        d.setAttribute('lang', lang === 'ar' ? 'ar-SA' : 'en');
+        d.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        d.classList.add('js');
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/app.css" />
+  </head>
+  <body>
+    <!-- Every visible sentence on this page lives in assets/strings.js, in
+         English and Arabic, and is filled in by assets/page.js. The markup
+         here is structure only, so the two languages cannot drift apart.
+         Page copy is still a DRAFT, to be rewritten in the entrant's own
+         first-person voice before submission. Every claim traces to
+         research.md; nothing is invented. -->
+    <header class="site-header">
+      <div class="hdr__inner">
+        <span class="hdr__label" id="hdr-label">Why was I declined?</span>
+        <div class="hdr__cluster">
+          <div class="hdr__menu">
+            <button type="button" id="lang-btn" class="hdr__btn hdr__btn--lang" aria-haspopup="menu" aria-expanded="false" aria-controls="lang-menu" aria-label="Language: English">
+              <svg class="hdr__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M2.75 12h18.5M12 2.75c2.6 2.5 3.9 5.6 3.9 9.25s-1.3 6.75-3.9 9.25c-2.6-2.5-3.9-5.6-3.9-9.25S9.4 5.25 12 2.75z"/></svg>
+              <span class="hdr__lang-name" id="lang-current">English</span>
+              <svg class="hdr__icon hdr__chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 9.5l6 6 6-6"/></svg>
+            </button>
+            <ul id="lang-menu" class="hdr__popover" role="menu" aria-label="Choose language" hidden>
+              <li role="none">
+                <button type="button" role="menuitemradio" class="hdr__item" data-lang="en" lang="en" aria-checked="true" tabindex="-1">
+                  <span data-i18n="lang.name.en">English</span>
+                  <svg class="hdr__icon hdr__check" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                </button>
+              </li>
+              <li role="none">
+                <button type="button" role="menuitemradio" class="hdr__item" data-lang="ar" lang="ar" aria-checked="false" tabindex="-1">
+                  <span data-i18n="lang.name.ar">العربية</span>
+                  <svg class="hdr__icon hdr__check" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <button type="button" id="theme-btn" class="hdr__btn hdr__btn--icon" aria-label="Switch to bright mode">
+            <svg class="hdr__icon hdr__icon--sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2.75v2.5M12 18.75v2.5M2.75 12h2.5M18.75 12h2.5M5.46 5.46l1.77 1.77M16.77 16.77l1.77 1.77M18.54 5.46l-1.77 1.77M7.23 16.77l-1.77 1.77"/></svg>
+            <svg class="hdr__icon hdr__icon--moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20.25 14.5A8.5 8.5 0 0 1 9.5 3.75a8.5 8.5 0 1 0 10.75 10.75z"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Decorative scroll progress: coral fills through the story, green
+           fills once the phone is reached. Set by header.js; hidden from
+           assistive tech because it repeats what the scrollbar already says. -->
+      <div class="hdr__progress" aria-hidden="true">
+        <span class="hdr__bar hdr__bar--pressure"></span>
+        <span class="hdr__bar hdr__bar--relief"></span>
+      </div>
+    </header>
+
+    <main id="entry">
+      <!-- The opening: two screens. Screen 1 is a full-viewport Welcome over
+           slowly moving colour (four layers of the page's own palette; pure
+           CSS, transform and opacity only, so it runs without JavaScript and
+           stands still under reduced motion). Screen 2 is the design-project
+           intro, a sheet that slides up over the pinned Welcome. -->
+      <div class="opening">
+      <section id="hello" class="hello" aria-labelledby="hello-title">
+        <div class="hello__sky" aria-hidden="true">
+          <i class="hello__blob hello__blob--coral"></i>
+          <i class="hello__blob hello__blob--green"></i>
+          <i class="hello__blob hello__blob--bone"></i>
+          <i class="hello__blob hello__blob--ember"></i>
+        </div>
+        <div class="hello__copy">
+          <p id="hello-title" class="hello__title"><span class="hello__word" data-i18n="hello.title">Welcome</span></p>
+          <p class="hello__lead" data-i18n="hello.lead">This is my project.</p>
+        </div>
+        <a class="hello__cue" href="#welcome">
+          <span class="hello__cue-text" data-i18n="hello.cue">Scroll down</span>
+          <svg class="hdr__icon hello__chev" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 9.5l6 6 6-6"/></svg>
+        </a>
+      </section>
+
+      <!-- The intro to the design project: what this is, before the story.
+           The card is decorative and hidden from assistive tech: the lead and
+           body carry the same point in words. It draws its three empty rows
+           when this screen scrolls into view (opening.js sets .is-seen);
+           without JavaScript or with reduced motion it simply shows drawn. -->
+      <section id="welcome" class="welcome" aria-labelledby="welcome-title">
+        <div class="welcome__wrap">
+        <div class="welcome__copy">
+          <p id="welcome-title" class="welcome__title" data-i18n="page.title">Why was I declined?</p>
+          <p class="welcome__lead" data-i18n="welcome.lead">It’s a design project.</p>
+          <p class="welcome__body" data-i18n="welcome.body">I noticed something in buy-now-pay-later apps. They can decline a purchase and never say why. I redesigned that moment.</p>
+          <p class="welcome__fix" data-i18n="welcome.fix">The fix in one sentence: when a purchase is declined, say why, say when it will be looked at again, and offer one thing the person can do.</p>
+          <p class="welcome__note" data-i18n="welcome.note">It’s an independent concept of mine. It isn’t made by, or affiliated with, Tabby.</p>
+          <p class="welcome__links">
+            <a class="welcome__go" href="#pain" data-i18n="welcome.start">Read the story</a>
+            <a class="welcome__skip" href="#prototype" data-i18n="welcome.skip">Go to the prototype</a>
+          </p>
+        </div>
+        <div class="wcard" aria-hidden="true">
+          <div class="wcard__head"><span class="wcard__dot"></span><span class="wcard__status" data-i18n="welcome.card.status">Purchase declined</span></div>
+          <div class="wcard__row"><span class="wcard__label" data-i18n="welcome.card.reason">Reason</span><span class="wcard__empty"></span></div>
+          <div class="wcard__row"><span class="wcard__label" data-i18n="welcome.card.review">Next review</span><span class="wcard__empty"></span></div>
+          <div class="wcard__row"><span class="wcard__label" data-i18n="welcome.card.next">What to do next</span><span class="wcard__empty"></span></div>
+        </div>
+        </div>
+      </section>
+      </div>
+
+      <!-- Sections 1 and 2. The English is static HTML so the story reads with
+           JavaScript off; page.js re-fills the same nodes from strings.js, and
+           scripts/check.mjs fails the build if the two ever differ.
+           Arabic for these two sections is not written yet: those keys are
+           listed in scripts/smoke.js (ARABIC_TODO) and fall back to English,
+           marked lang="en". -->
+      <section id="pain" class="section story story--pain" aria-labelledby="pain-title" data-chapter="hook">
+        <h1 id="pain-title" data-i18n="s1.h1">She never paid late. Tabby still shut her out for months.</h1>
+        <span class="story__rule" aria-hidden="true"></span>
+        <div class="scene">
+        <div class="story__lines">
+          <p class="story__beat" data-i18n="s1.l1" data-chapter="opening">Someone I know used Tabby for a SAR 1,000 plane ticket.</p>
+          <p class="story__beat" data-i18n="s1.l2">She paid it.</p>
+          <p class="story__beat" data-i18n="s1.l3">She isn’t the type to owe anyone. She pays upfront whenever she can, because she hates having a payment hanging over her.</p>
+          <p class="story__beat story__pressure" data-i18n="s1.l4" data-chapter="rising">Then her payments started getting declined.</p>
+          <p class="story__beat story__pressure" data-tall data-i18n="s1.l5">Not once. For months.</p>
+          <p class="story__beat" data-i18n="s1.l6">She contacted support. They told her they didn’t know why either.</p>
+          <p class="story__beat" data-i18n="s1.l7">Tabby’s message to her: try again in a few months.</p>
+          <p class="story__beat" data-i18n="s1.l8">She did. One day it just worked again.</p>
+          <p class="story__beat" data-i18n="s1.l9">Nobody told her why it stopped.</p>
+          <p class="story__beat story__pressure" data-i18n="s1.l10">Nobody told her it was fixed.</p>
+        </div>
+        <div class="scene__viz" aria-hidden="true">
+          <!-- Decorative, so it is hidden from assistive tech: the beats say all of it.
+               A strip of unlabelled months (no dates), six coral markers that land as you
+               scroll, a bubble that arrives empty and then fills, one marker that turns
+               neutral, and a notification slot that stays EMPTY on purpose. Without
+               JavaScript or with reduced motion this shows in its final state. -->
+          <ol class="scene__months">
+                <li class="month"><span class="marker" data-at="4.1"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+                <li class="month"><span class="marker" data-at="5.05"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+                <li class="month"><span class="marker" data-at="5.3"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+                <li class="month"><span class="marker" data-at="5.55"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+                <li class="month"><span class="marker" data-at="5.8"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+                <li class="month"><span class="marker is-neutral" data-at="6.1" data-neutral="8.1"><span class="marker__dot"><svg class="marker__x" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg><svg class="marker__ok" viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M7.5 12.5l3 3 6-6.5"/></svg></span><span class="marker__label" data-i18n="s1.viz.declined">Declined</span></span></li>
+          </ol>
+          <div class="scene__notes">
+            <div class="scene__bubble" data-at="7.05"><span class="scene__bubble-text" data-i18n="s1.viz.bubble">Try again in a few months.</span></div>
+            <div class="scene__slot" data-at="9.05"></div>
+          </div>
+        </div>
+        </div>
+        <p class="story__small" data-i18n="s1.small">As she described it to me. Her account, not a Tabby statement.</p>
+      </section>
+
+      <section id="agitate" class="section story story--agitate" aria-labelledby="agitate-title" data-chapter="rising">
+        <span class="story__tension" aria-hidden="true"></span>
+        <h2 id="agitate-title" class="story__h2" data-i18n="s2.h2">It isn’t her account. It’s how it’s built.</h2>
+        <div class="story__acts">
+          <span class="story__frame" aria-hidden="true"></span>
+        <div class="story__act" data-act="1">
+          <p class="story__beat" data-i18n="s2.a1">I wanted to know if it was just her.</p>
+          <p class="story__beat" data-i18n="s2.a2">So I read Tabby’s own help centre.</p>
+          <!-- VERIFY: RESOLVED 2026-09-25 (checked on tabby.ai/en-SA). The "make more
+               transactions" line and the "regardless of whether or not you are overdue" line
+               both come from articles filed under Tabby Card, a UAE-only add-on, so they stay
+               OUT of the page. The line below paraphrases the general decline article
+               (help-declined-purchases/why-was-my-tabby-purchase-not-approved), which is
+               verified on the Saudi path. Do not restore the Card lines without attributing
+               them to the Card help pages. -->
+          <!-- VERIFY: the loop beat (declined, can't buy, limit can't rise) depended on the
+               Card article, so it is not drawn in increment 2. -->
+          <p class="story__beat" data-i18n="s2.a3">About a decline, it says each order is reviewed on its own, your limit can vary by store, and support can’t change the decision. It recommends trying again.</p>
+        </div>
+        <!-- The evidence widens first (help centre, a second person, the review
+             count), and only then does the app itself turn out to hide the
+             number: that discovery is the climax, so it comes last. -->
+        <div class="story__act" data-act="2">
+          <p class="story__beat" data-i18n="s2.a9">I asked someone else.</p>
+          <p class="story__beat" data-i18n="s2.a10">He tried to buy a phone. 2,000, declined. 3,000, declined. 4,000, declined. 5,000, declined. 1,800 went through, for 3 months only.</p>
+          <p class="story__beat" data-i18n="s2.a11">The only explanation he got came from his uncle.</p>
+          <p class="story__beat story__pressure" data-i18n="s2.a12">Not from the app.</p>
+          <p class="story__beat" data-i18n="s2.a13Html">Then I counted. About <strong>9 of the 28</strong> Trustpilot reviews I could see were about a decline or an unexplained limit. Roughly 32%. People who write reviews skew angry, so that’s a signal, not a headcount.</p>
+        </div>
+        <div class="story__act" data-act="3">
+          <p class="story__beat" data-i18n="s2.a4" data-chapter="climax">Then I opened the app.</p>
+          <p class="story__beat" data-i18n="s2.a5">Four tabs. Home, Shop, Payments, Profile.</p>
+          <p class="story__beat story__pressure" data-i18n="s2.a6">None of them shows your spending limit.</p>
+          <p class="story__beat" data-i18n="s2.a7">Payments tells you exactly what you owe.</p>
+          <p class="story__beat" data-i18n="s2.a8">Nothing tells you what you can spend.</p>
+          <!-- The climax, drawn: each of the four tabs is checked and none holds the limit;
+               the slot for it stays empty on purpose. Decorative, so hidden from assistive
+               tech: the beats above say all of it. Shows its final state without JavaScript
+               or with reduced motion. -->
+          <div class="climax" aria-hidden="true">
+            <div class="climax__slot"><span class="climax__slot-label" data-i18n="profile.limit">Your spending limit</span><span class="climax__slot-empty"></span></div>
+          <ol class="climax__tabs">
+            <li class="climax__tab" style="--i:0"><span class="climax__tab-name" data-i18n="nav.home">Home</span><span class="climax__x"><svg class="climax__xmark" viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span></li>
+            <li class="climax__tab" style="--i:1"><span class="climax__tab-name" data-i18n="nav.shop">Shop</span><span class="climax__x"><svg class="climax__xmark" viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span></li>
+            <li class="climax__tab" style="--i:2"><span class="climax__tab-name" data-i18n="nav.payments">Payments</span><span class="climax__x"><svg class="climax__xmark" viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span></li>
+            <li class="climax__tab" style="--i:3"><span class="climax__tab-name" data-i18n="nav.profile">Profile</span><span class="climax__x"><svg class="climax__xmark" viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg></span></li>
+          </ol>
+          </div>
+        </div>
+        </div>
+        <div class="story__end">
+          <p class="story__closing" data-i18n="s2.closing">The number that decides whether your purchase goes through is the one number the app never shows you.</p>
+        </div>
+      </section>
+
+      <section id="prototype" class="section" aria-labelledby="prototype-title" data-chapter="falling">
+        <p class="story__bridge" data-i18n="s3.bridge">So I redesigned the one moment that failed her.</p>
+        <h2 id="prototype-title" data-i18n="page.protoH2"></h2>
+        <p class="section-lede" data-i18n="page.protoLede"></p>
+        <div class="stream" data-seen>
+          <div class="stream__col">
+            <h3 class="stream__h" data-i18n="stream.today">Today</h3>
+          <ol class="stream__row stream__row--today">
+            <li class="stream__step" style="--i:0" data-i18n="stream.declined">Purchase declined</li>
+            <li class="stream__step" style="--i:1" data-i18n="stream.t2">The app gives no reason, no date and no next step</li>
+            <li class="stream__step" style="--i:2" data-i18n="stream.t3">A generic help article: try again</li>
+            <li class="stream__step" style="--i:3" data-i18n="stream.t4">Guesswork, or a relative’s theory</li>
+            <li class="stream__step stream__end" style="--i:4" data-i18n="stream.tEnd">Trust drops. No way back to a higher limit.</li>
+          </ol>
+          </div>
+          <div class="stream__col">
+            <h3 class="stream__h" data-i18n="stream.proposed">Proposed</h3>
+          <ol class="stream__row stream__row--proposed">
+            <li class="stream__step" style="--i:0" data-i18n="stream.declined">Purchase declined</li>
+            <li class="stream__step" style="--i:1" data-i18n="stream.p2">Same screen: the reason, the next review and one next step</li>
+            <li class="stream__step" style="--i:2" data-i18n="stream.p3">The person acts: a smaller amount, another plan, an instalment paid</li>
+            <li class="stream__step" style="--i:3" data-i18n="stream.p4">The purchase completes, or they wait knowing what comes next</li>
+            <li class="stream__step stream__end" style="--i:4" data-i18n="stream.pEnd">On-time payments build the history a higher limit needs.</li>
+          </ol>
+          </div>
+        </div>
+        <noscript>
+          <p class="noscript">The interactive prototype needs JavaScript to run. The written story above and the sections below do not.</p>
+        </noscript>
+        <!-- The stage keeps one box for the phone. The HTML phone (prototype.js)
+             fills it and is the whole entry on its own; assets/phone.js may lay
+             the Flutter build of the same phone over the same box (#phone-host)
+             once that has painted, and only if the HTML phone is untouched. -->
+        <div id="prototype-stage" data-engine="html" data-phone-status="idle">
+          <div id="prototype-root" data-state="empty"></div>
+          <div id="phone-host" inert aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <!-- The ending: her story finished the way it should have been told, then
+           the one-sentence fix. The depth (trade-offs, who it helps, how you
+           would know) sits below, after the phone, so the story still lands
+           inside the first minute. -->
+      <section id="ending" class="section ending" aria-labelledby="ending-title" data-chapter="conclusion">
+        <h2 id="ending-title" class="ending__h2" data-i18n="end.h2">Now imagine the app had told her.</h2>
+        <p class="ending__beat" data-i18n="end.l1">Why her payments were declined.</p>
+        <p class="ending__beat" data-i18n="end.l2">When it would be looked at again.</p>
+        <p class="ending__beat ending__relief" data-i18n="end.l3">Your limit was reviewed and restored.</p>
+        <p class="ending__name" data-i18n="end.name">This isn’t a decline problem. It’s a silence problem.</p>
+        <p class="ending__fix" data-i18n="end.fix">Say why. Say when it will be looked at again. Say when it’s over.</p>
+      </section>
+
+      <section id="cases" class="section cases" aria-labelledby="cases-title">
+        <h2 id="cases-title" data-i18n="cases.h2">Three people, one gap</h2>
+        <p class="section-lede" data-i18n="cases.lede">Two are people I spoke to. The third is a pattern in public reviews. None of it is a Tabby statement.</p>
+        <div class="cases__grid">
+          <article class="case">
+            <h3 class="case__title" data-i18n="cases.c1.title">The never-late payer</h3>
+            <dl class="case__list">
+              <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c1.fact">Pays upfront, never late. Declined for months. Support couldn’t explain why.</dd></div>
+              <div><dt data-i18n="cases.gap">What was missing</dt><dd data-i18n="cases.c1.gap">No reason, no review date, and nobody told her when it was fixed.</dd></div>
+              <div class="case__fix"><dt data-i18n="cases.fix">What the screen says instead</dt><dd data-i18n="cases.c1.fix">It’s a review. Here’s the date. Nothing is needed from you. We’ll tell you when it lifts.</dd></div>
+            </dl>
+          </article>
+          <article class="case">
+            <h3 class="case__title" data-i18n="cases.c2.title">The new account</h3>
+            <dl class="case__list">
+              <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c2.fact">Tried 2,000, 3,000, 4,000 and 5,000: all declined. 1,800 went through, for 3 months only.</dd></div>
+              <div><dt data-i18n="cases.gap">What was missing</dt><dd data-i18n="cases.c2.gap">The app never said the starting limit is low, and offered no choice of plan length.</dd></div>
+              <div class="case__fix"><dt data-i18n="cases.fix">What the screen says instead</dt><dd data-i18n="cases.c2.fix">Your account is new, so your limit starts lower. Here’s what fits: a smaller amount, or another plan length.</dd></div>
+            </dl>
+          </article>
+          <article class="case">
+            <h3 class="case__title" data-i18n="cases.c3.title">The limit cut</h3>
+            <dl class="case__list">
+              <div><dt data-i18n="cases.fact">What happened</dt><dd data-i18n="cases.c3.fact">A long-standing account, reviewed, and its limit reduced without warning.</dd></div>
+              <div><dt data-i18n="cases.gap">What was missing</dt><dd data-i18n="cases.c3.gap">No notice of the cut, no reason, and no date for the next review.</dd></div>
+              <div class="case__fix"><dt data-i18n="cases.fix">What the screen says instead</dt><dd data-i18n="cases.c3.fix">A review lowered your limit. The next one is on this date. Here’s what counts toward it.</dd></div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="skipped" class="section" aria-labelledby="skip-title">
+        <h2 id="skip-title" data-i18n="skip.h2">What I chose not to build</h2>
+        <ul class="skipped">
+          <li data-i18n="skip.l1Html"><strong>A real Tabby connection.</strong> This is a static demonstration with realistic mock data: no backend, no accounts, no database.</li>
+          <li data-i18n="skip.l2Html"><strong>Fixes for cashback, cards, refunds or human support.</strong> Those complaints are real. I left them out to keep one idea sharp.</li>
+          <li data-i18n="skip.l3Html"><strong>Exact decline rules, or a promise of a higher limit.</strong> The fix makes a decision legible. Saudi regulation caps how much a person can owe through buy-now-pay-later, so it can’t promise growth.</li>
+        </ul>
+      </section>
+
+      <section id="why-not" class="section">
+        <h2 data-i18n="page.whyH2"></h2>
+        <p class="section-lede" data-i18n="page.whyLede"></p>
+        <ol class="reasons">
+          <li data-i18n="page.why1Html"></li>
+          <li data-i18n="page.why2Html"></li>
+          <li data-i18n="page.why3Html"></li>
+          <li data-i18n="page.why4Html"></li>
+          <li data-i18n="page.why5Html"></li>
+        </ol>
+      </section>
+
+      <section id="who" class="section">
+        <h2 data-i18n="page.whoH2"></h2>
+        <p data-i18n="page.whoP1"></p>
+        <p data-i18n="page.whoP2"></p>
+      </section>
+
+      <section id="metrics" class="section">
+        <h2 data-i18n="page.metricsH2"></h2>
+        <p class="section-lede" data-i18n="page.metricsLede"></p>
+        <ul class="metrics">
+          <li data-i18n="page.metric1"></li>
+          <li data-i18n="page.metric2"></li>
+          <li data-i18n="page.metric3"></li>
+        </ul>
+        <p data-i18n="page.metricsHow">How I’d run it: show the new decline screen to half of new and recently reviewed accounts, keep today’s screen for the other half, and compare these three numbers after a fixed period. I’m not predicting the results.</p>
+      </section>
+
+      <section id="ships" class="section" aria-labelledby="ships-title">
+        <h2 id="ships-title" data-i18n="ships.h2">What ships first</h2>
+        <p class="ships__lead" data-i18n="ships.p1">One screen: the decline screen. Add a reason category, the date of the next review and one next step, and nothing else.</p>
+        <p data-i18n="ships.p2">The limit screen, the “restored” message and the plan-length alternatives come after, and each one has to earn its place against the three numbers above.</p>
+      </section>
+
+      <section id="sources" class="section" aria-labelledby="sources-title">
+        <h2 id="sources-title" data-i18n="sources.h2">Sources and limits</h2>
+        <p class="section-lede" data-i18n="sources.lede">What I used, and what it can’t tell you.</p>
+        <ul class="sources">
+          <li data-i18n="sources.s1Html">Tabby’s own help article on declined purchases: <a href="https://tabby.ai/en-SA/help/help-declined-purchases/why-was-my-tabby-purchase-not-approved">Why was my Tabby purchase not approved?</a></li>
+          <li data-i18n="sources.s2Html">The regulator’s rules for buy-now-pay-later companies: <a href="https://rulebook.sama.gov.sa/en/rules-regulating-buy-now-pay-later-bnpl-companies-0">SAMA rulebook</a></li>
+          <li data-i18n="sources.s3Html">Public reviews of the app: <a href="https://www.trustpilot.com/review/tabby.ai">Trustpilot</a></li>
+          <li data-i18n="sources.s4">Two conversations with people who use Tabby, and my own walkthrough of the app.</li>
+        </ul>
+        <ul class="sources sources--limits">
+          <li data-i18n="sources.l1">The review count is a proxy. About 9 of the 28 reviews I could see (roughly 32%) were about a decline or an unexplained limit, out of 2,024 in total. People who write reviews skew angry.</li>
+          <li data-i18n="sources.l2">The two conversations are people’s own recollection, not screenshots or Tabby statements. One explanation came from a relative’s theory.</li>
+          <li data-i18n="sources.l3">I looked at the app on more than one account, most recently version 4.90.0.</li>
+          <li data-i18n="sources.l4">Nothing here was confirmed with Tabby. That reasons can be shown as categories without helping people game the system is my reasoning, not a tested fact.</li>
+          <li data-i18n="sources.l5">The amounts, causes and dates in the prototype are illustrative. Tabby’s Card help pages are left out on purpose, because they describe a card product that may not exist for Saudi users.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="assets/strings.js"></script>
+    <script src="assets/scenarios.js"></script>
+    <script src="assets/app-data.js"></script>
+    <script src="assets/prototype.js"></script>
+    <script src="assets/page.js"></script>
+    <script src="assets/header.js"></script>
+    <script src="assets/scroll.js"></script>
+    <script src="assets/opening.js"></script>
+    <script src="assets/phone-version.js"></script>
+    <script src="assets/phone.js"></script>
+  </body>
+</html>

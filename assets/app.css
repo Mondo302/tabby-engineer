@@ -1,0 +1,3000 @@
+/* Layout and components. Colours and fonts come from tokens.css only.
+   Motif: the instalment schedule. It appears on every screen in one of
+   three states — blocked, under review, restored — and carries the
+   argument without prose. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--page-text);
+  font-family: var(--font-latin);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  font-feature-settings: 'tnum' 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+[dir='rtl'] body {
+  font-family: var(--font-arabic);
+}
+
+.section {
+  max-width: 40rem; /* ~68ch at this size */
+  margin: 0 auto;
+  padding: calc(var(--space) * 4) var(--space);
+}
+
+h1 {
+  font-size: clamp(2rem, 7vw, var(--step-3));
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0 0 calc(var(--space) * 1.25);
+  text-wrap: balance;
+}
+
+.lede {
+  font-size: var(--step-1);
+  line-height: 1.45;
+  color: var(--n-600);
+  margin: 0;
+  max-width: 32rem;
+}
+
+/* --- page copy (increment 7) ----------------------------------------------
+   The sections around the prototype: story, evidence, trade-offs, who it
+   helps, metrics. Same restraint as the app screens — one accent colour
+   used with intent, not decoration on every element. */
+
+.eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.9rem;
+  text-wrap: balance;
+}
+
+.section-lede {
+  color: var(--text-muted);
+  margin: -0.4rem 0 1.4rem;
+}
+
+/* Page copy rules stop at the phone: it is an app inside the page and must
+   not inherit the page's paragraph margins (:where keeps specificity as-is). */
+.section p:where(:not(.phone *)) {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+}
+
+.section p:last-child:where(:not(.phone *)) {
+  margin-bottom: 0;
+}
+
+.section a:where(:not(.phone *)) {
+  color: var(--ink);
+  text-decoration-color: var(--n-300);
+  text-underline-offset: 3px;
+}
+
+.section a:hover:where(:not(.phone *)) {
+  text-decoration-color: var(--ink);
+}
+
+.section em:where(:not(.phone *)) {
+  font-style: normal;
+  background: linear-gradient(to top, var(--mark) 0.2em, transparent 0.2em);
+  padding: 0 0.05em;
+}
+
+.reasons,
+.metrics {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.reasons li,
+.metrics li {
+  padding-inline-start: 1.9rem;
+  position: relative;
+  max-width: 62ch;
+  line-height: 1.5;
+}
+
+.reasons {
+  counter-reset: reason;
+}
+
+.reasons li {
+  counter-increment: reason;
+}
+
+.reasons li::before {
+  content: counter(reason);
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.05em;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--n-100);
+  color: var(--n-600);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+}
+
+.metrics li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.1rem;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--relief);
+}
+
+/* --- prototype shell ------------------------------------------------------ */
+
+#prototype-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--space) * 1.5);
+}
+
+/* --- scenario picker: three real cases ------------------------------------
+   Cards, not a dropdown — the point is that a judge can see all three exist
+   and compare them, not hunt through a menu for them. */
+
+.scenarios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.scenarios__item {
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--n-200);
+  border-radius: 14px;
+  padding: 0.6rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.scenarios__item:hover {
+  border-color: var(--n-300);
+}
+
+.scenarios__item.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.scenarios__item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.scenarios__name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.scenarios__item.is-active .scenarios__name {
+  color: var(--paper);
+}
+
+.scenarios__sub {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--n-500);
+}
+
+.scenarios__item.is-active .scenarios__sub {
+  color: var(--chip-sub);
+}
+
+@media (max-width: 420px) {
+  .scenarios {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toggle {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  background: var(--n-100);
+  border-radius: 999px;
+}
+
+.toggle__btn {
+  font: inherit;
+  min-height: 44px; /* a comfortable target; the Flutter phone is built to the same size */
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 1.15rem;
+  background: transparent;
+  color: var(--n-500);
+  cursor: pointer;
+}
+
+.toggle__btn[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.toggle__btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* --- device frame --------------------------------------------------------
+   An iPhone presentation frame on desktop. On a real phone the frame is
+   removed entirely and the app fills the screen — see the media query at
+   the end of this block. A frame inside a frame would be absurd. */
+
+.phone {
+  --bezel: 11px;
+  position: relative;
+  width: 390px;
+  max-width: 100%;
+  padding: var(--bezel);
+  color: var(--ink); /* the phone is light in both themes */
+  border-radius: 56px;
+  background: #0d0d0d;
+  box-shadow:
+    0 0 0 1.5px #2e2e2e,
+    0 40px 80px -40px rgba(13, 13, 13, 0.55);
+}
+
+.phone__screen {
+  position: relative;
+  border-radius: 45px;
+  background: var(--app-bg);
+  overflow: hidden;
+  height: 780px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* status bar: real clock, so it never looks like a screenshot */
+.statusbar {
+  flex: none;
+  height: 52px;
+  padding: 16px 30px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.statusbar__icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.statusbar__bars,
+.statusbar__wifi,
+.statusbar__battery {
+  display: block;
+}
+
+.island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 34px;
+  border-radius: 999px;
+  background: #0d0d0d;
+  z-index: 2;
+}
+
+.phone__body {
+  flex: 1;
+  padding: 0.35rem 1.15rem 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.phone__body::-webkit-scrollbar {
+  width: 0;
+}
+
+.home-indicator {
+  flex: none;
+  height: 26px;
+  display: grid;
+  place-items: center;
+}
+
+.home-indicator::after {
+  content: '';
+  width: 140px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--n-800);
+  opacity: 0.85;
+}
+
+/* On a real phone: no bezel, no island, no fake status bar — the site is
+   the app. The OS supplies the chrome. */
+@media (max-width: 480px) {
+  .phone {
+    --bezel: 0px;
+    width: 100%;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .phone__screen {
+    border-radius: 0;
+    height: auto;
+    min-height: 78vh;
+  }
+
+  .island,
+  .statusbar,
+  .home-indicator {
+    display: none;
+  }
+
+  .phone__body {
+    padding: 0 var(--space);
+    overflow: visible;
+  }
+}
+
+/* --- app chrome: header and tab bar --------------------------------------- */
+
+.appbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1.35rem 0.2rem;
+  color: var(--ink);
+}
+
+.appbar .statusbar__glyph {
+  display: block;
+  line-height: 0;
+}
+
+.tabbar {
+  flex: none;
+  margin: 0.4rem auto 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 7px;
+  background: var(--paper);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px -8px rgba(26, 25, 25, 0.22);
+}
+
+.tabbar__item {
+  width: 46px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--n-500);
+  line-height: 0;
+  /* reset default button chrome */
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tabbar__item.is-active {
+  background: var(--n-100);
+  color: var(--ink);
+}
+
+/* --- screens -------------------------------------------------------------- */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space) * 1.15);
+  flex: 1;
+  animation: screen-in 260ms ease-out;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+
+.screen__title {
+  font-size: var(--step-2);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.032em; /* their headings are tightly tracked */
+  margin: 0.25rem 0 0;
+  max-width: 15ch;
+  text-wrap: balance;
+}
+
+.screen__body {
+  color: var(--n-500);
+  margin: 0;
+}
+
+.screen__link {
+  margin: auto 0 0;
+  padding-top: calc(var(--space) * 1.1);
+  border-top: 1px solid var(--n-100);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--n-300);
+}
+
+/* today's version: a dead end, styled like one */
+.screen--today {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.screen--today .screen__title {
+  max-width: none;
+}
+
+.screen__glyph {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--n-100);
+  color: var(--n-400);
+  display: grid;
+  place-items: center;
+  font-size: var(--step-2);
+  font-weight: 600;
+}
+
+.screen__help {
+  color: var(--n-400);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- the reason ----------------------------------------------------------
+   Not a card in a row of identical cards: a tinted panel with a rule on
+   the leading edge, so it reads as the answer to the headline. */
+
+.reason {
+  background: var(--neg-100);
+  border-radius: 20px;
+  padding: 0.95rem 1.1rem;
+}
+
+.reason__label {
+  margin: 0 0 0.15rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--declined-ink);
+}
+
+.reason__text {
+  margin: 0;
+  font-size: 0.97rem;
+  line-height: 1.45;
+}
+
+/* --- schedule strip (the motif) ------------------------------------------ */
+
+.schedule {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule__cell {
+  border-radius: 12px;
+  padding: 0.5rem 0.35rem;
+  background: var(--surface);
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--n-500);
+  line-height: 1.3;
+}
+
+.schedule__amount {
+  display: block;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.schedule__cell--blocked {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--paper),
+    var(--paper) 5px,
+    var(--n-100) 5px,
+    var(--n-100) 10px
+  );
+  color: var(--n-400);
+}
+
+.schedule__cell--blocked .schedule__amount {
+  color: var(--n-400);
+  text-decoration: line-through;
+  text-decoration-color: var(--n-300);
+}
+
+.schedule__cell--restored {
+  background: var(--restored-bg);
+  color: var(--n-600);
+}
+
+/* --- amounts -------------------------------------------------------------- */
+
+.amounts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.3rem var(--space);
+  margin: 0;
+}
+
+.amounts__term {
+  margin: 0;
+  color: var(--n-500);
+  font-size: 0.95rem;
+}
+
+.amounts__value {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: end;
+}
+
+.amounts__term--ok,
+.amounts__value--ok {
+  color: var(--n-700);
+}
+
+/* --- options: a list of things you can do, not decorated cards ----------- */
+
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--n-100);
+}
+
+.options__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--n-600);
+}
+
+.options__item {
+  padding: 0.62rem 0;
+  font-size: 0.95rem;
+}
+
+.options__item + .options__item {
+  border-top: 1px solid var(--n-100);
+}
+
+.options__label {
+  padding: 0 1.1rem;
+}
+
+/* --- review line ---------------------------------------------------------- */
+
+.review {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space);
+  font-size: 0.92rem;
+}
+
+.review__label,
+.review__value {
+  margin: 0;
+}
+
+.review__label {
+  color: var(--n-500);
+}
+
+.review__value {
+  font-weight: 600;
+  color: var(--review-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- app tabs: home, shop, payments, profile ------------------------------ */
+
+.screen--tab {
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.tab__title {
+  font-size: 2.1rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  margin: 0.2rem 0 0.2rem;
+}
+
+.tab__heading {
+  margin: 0.4rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.searchbar {
+  border: 1px solid var(--n-200);
+  border-radius: 999px;
+  padding: 0.62rem 1rem;
+  color: var(--n-400);
+  font-size: 0.92rem;
+  background: var(--surface);
+}
+
+.tiles {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.tiles--pair {
+  grid-template-columns: 1fr 1fr;
+}
+
+.tiles--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.tile {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 0.8rem 0.85rem;
+  min-height: 74px;
+}
+
+.tile--category {
+  min-height: 62px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.tile__title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.tile__sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--n-500);
+}
+
+.promo {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 0.9rem 1rem;
+}
+
+.promo__text {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.promo__action {
+  margin: 0.35rem 0 0;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.merchants {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem 0.4rem;
+}
+
+.merchant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.merchant__mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  font-size: 1.05rem;
+  background: var(--surface);
+  color: var(--n-600);
+}
+
+.merchant__mark--a { background: var(--pos-100); }
+.merchant__mark--b { background: var(--warn-100); }
+.merchant__mark--c { background: #e8eefc; }
+.merchant__mark--d { background: var(--neg-100); }
+.merchant__mark--e { background: #f0e8fb; }
+.merchant__mark--f { background: var(--n-100); }
+
+.merchant__name {
+  font-size: 0.72rem;
+  color: var(--n-600);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 0.9rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.product__image {
+  height: 108px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--n-100), var(--n-200));
+}
+
+.product__name {
+  margin: 0.3rem 0 0;
+  font-weight: 600;
+}
+
+.product__price {
+  margin: 0 0 0.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--n-600);
+}
+
+.due__total {
+  margin: 0.15rem 0 0;
+  color: var(--n-500);
+  font-size: 0.92rem;
+}
+
+.pill-button {
+  background: var(--n-100);
+  border-radius: 16px;
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.pill-button--quiet {
+  background: transparent;
+  color: var(--n-600);
+  margin-top: 0.4rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 1.6rem 0.5rem;
+}
+
+.empty__title {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.empty__body {
+  margin: 0;
+  color: var(--n-500);
+  font-size: 0.9rem;
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--surface);
+  margin: 0.4rem auto 0.2rem;
+}
+
+.block--rows {
+  padding: 0.25rem 1.1rem;
+}
+
+/* The one thing the real app does not have. Marked so the eye finds it. */
+.block--new {
+  box-shadow: 0 0 0 2px var(--restored);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.72rem 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: start;
+  color: inherit;
+  cursor: default;
+}
+
+button.row {
+  cursor: pointer;
+}
+
+.row + .row {
+  border-top: 1px solid var(--n-100);
+}
+
+.row__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.row__label {
+  font-size: 0.95rem;
+}
+
+.row__sub {
+  font-size: 0.8rem;
+  color: var(--n-500);
+}
+
+.row__chevron {
+  color: var(--n-500);
+}
+
+[dir='rtl'] .row__chevron {
+  transform: scaleX(-1);
+}
+
+.linkish {
+  margin-top: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* --- limit detail --------------------------------------------------------- */
+
+.screen__back {
+  align-self: flex-start;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--n-500);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.screen__back::before {
+  content: '‹ ';
+}
+
+[dir='rtl'] .screen__back::before {
+  content: '› ';
+}
+
+.screen__back:focus-visible,
+.screen__link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+button.screen__link {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: start;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--n-100);
+  width: 100%;
+  cursor: pointer;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--n-300);
+}
+
+.figure__label {
+  margin: 0.75rem 0 0.1rem;
+  color: var(--n-500);
+  font-size: 0.9rem;
+}
+
+.figure {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure--none {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--n-500);
+  letter-spacing: 0;
+}
+
+.figure--restored {
+  font-size: 1.5rem;
+  color: var(--restored-ink);
+}
+
+/* Their pattern: white cards floating on the warm page, generous radius,
+   no borders and no heavy shadows. */
+.block,
+.options,
+.amounts {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 0.95rem 1.1rem;
+  border: 0;
+}
+
+.block__title {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.block__text {
+  margin: 0;
+  font-size: 0.93rem;
+  color: var(--n-600);
+}
+
+.block__text--none {
+  color: var(--declined-ink);
+}
+
+.block__text + .block__text {
+  margin-top: 0.35rem;
+}
+
+.block__text--strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.block__reassure {
+  margin: 0.45rem 0 0;
+  font-size: 0.9rem;
+  color: var(--restored-ink);
+  font-weight: 600;
+}
+
+/* Visible progress toward the next review. The whole point: a path the
+   user can watch themselves move along, instead of a date in the void. */
+.progress__count {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.progress {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.progress__step {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--n-100);
+}
+
+.progress__step.is-done {
+  background: var(--restored);
+}
+
+.facts,
+.counts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.93rem;
+  color: var(--n-600);
+}
+
+.counts__item {
+  display: flex;
+  gap: 0.55rem;
+  align-items: baseline;
+}
+
+.counts__mark {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.counts__item--yes .counts__mark {
+  background: var(--restored-bg);
+  color: var(--restored-ink);
+}
+
+.counts__item--no .counts__mark {
+  background: var(--n-100);
+  color: var(--n-500);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--n-400);
+  line-height: 1.4;
+}
+
+.screen--recovery {
+  gap: 0.9rem;
+}
+
+.screen__footer {
+  margin-top: auto;
+  padding-top: var(--space);
+}
+
+.screen__footer .btn {
+  width: 100%;
+}
+
+/* --- checkout and processing ---------------------------------------------- */
+
+.screen--checkout {
+  gap: 1rem;
+}
+
+.checkout__merchant {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--n-400);
+}
+
+.checkout__total .figure {
+  font-size: 2.4rem;
+}
+
+.checkout__terms {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--n-500);
+}
+
+.screen--processing {
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2.5px solid var(--n-200);
+  border-top-color: var(--ink);
+  animation: spin 720ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* --- buttons -------------------------------------------------------------- */
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--n-200);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* after .btn: same specificity, so order decides */
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.noscript {
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 0 var(--space);
+}
+
+/* --- header ---------------------------------------------------------------
+   Slim and quiet. At the inline-end corner one compact cluster: a language
+   menu and a theme switch. Logical properties throughout, so RTL mirrors
+   without a second rule set. The controls need JavaScript, so they stay
+   hidden until the head script marks <html class="js">. */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* Without JavaScript the header is solid: nothing scrolls under a see-through
+     bar it cannot frost. With JavaScript it starts clear and frosts once the
+     page moves (header.js adds .is-scrolled). */
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.js .site-header {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+/* The frost lives on a pseudo-element so the only thing that animates is its
+   opacity (transform and opacity only, everywhere on this page). */
+.js .site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .js .site-header::before {
+    background: var(--header-glass);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+  }
+}
+
+.js .site-header.is-scrolled::before {
+  opacity: 1;
+}
+
+.hdr__progress {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+  display: none;
+}
+
+.js .hdr__progress {
+  display: block;
+}
+
+.hdr__bar {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0));
+}
+
+[dir='rtl'] .hdr__bar {
+  transform-origin: right center;
+}
+
+.hdr__bar--pressure {
+  background: var(--pressure);
+  --p: var(--p-story, 0);
+}
+
+.hdr__bar--relief {
+  background: var(--relief);
+  --p: var(--p-relief, 0);
+}
+
+/* The label names the beat being read; a change fades in (opacity only). */
+.hdr__label.is-swap {
+  animation: hdr-label-in 0.4s ease-out;
+}
+
+@keyframes hdr-label-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .site-header::before {
+    transition: none;
+  }
+  .hdr__label.is-swap {
+    animation: none;
+  }
+}
+
+.hdr__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 var(--space);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space);
+}
+
+.hdr__label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.hdr__cluster {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.js .hdr__cluster {
+  display: flex;
+}
+
+.hdr__menu {
+  position: relative;
+}
+
+.hdr__btn {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--page-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.hdr__btn--icon {
+  padding: 0;
+}
+
+/* hover tints and outlines the pill; a press sinks it and tints it further;
+   an open menu keeps the hover look so the button reads as the one in use */
+.hdr__btn:hover,
+.hdr__btn[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--page-text) 12%, transparent);
+  border-color: color-mix(in srgb, var(--page-text) 70%, transparent);
+}
+
+.hdr__btn:active {
+  background: color-mix(in srgb, var(--page-text) 24%, transparent);
+  border-color: var(--page-text);
+  transform: scale(0.94);
+}
+
+.hdr__btn:focus-visible,
+.hdr__item:focus-visible {
+  outline: 3px solid var(--page-text);
+  outline-offset: 2px;
+}
+
+.hdr__icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.hdr__chev {
+  opacity: 0.7;
+  margin-inline-start: -2px;
+}
+
+/* the icon shows the mode the button switches TO */
+.hdr__icon--moon,
+[data-theme='bright'] .hdr__icon--sun {
+  display: none;
+}
+
+[data-theme='bright'] .hdr__icon--moon {
+  display: block;
+}
+
+.hdr__popover {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  min-width: 11rem;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  color: var(--page-text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.5);
+  transform-origin: top;
+  animation: menu-in 0.16s ease-out;
+}
+
+.hdr__popover[hidden] {
+  display: none;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hdr__item {
+  font: inherit;
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.hdr__item:hover,
+.hdr__item:focus-visible {
+  background: var(--surface-sunken);
+}
+
+.hdr__item:active {
+  background: color-mix(in srgb, var(--page-text) 22%, var(--surface));
+  transform: scale(0.98);
+}
+
+.hdr__item:focus-visible {
+  outline-offset: -3px; /* inside the row, so the menu's edge never clips it */
+}
+
+.hdr__item[aria-checked='false'] .hdr__check {
+  visibility: hidden;
+}
+
+.hdr__check {
+  stroke-width: 2;
+}
+
+/* a language is always drawn in its own face */
+[lang^='ar'] {
+  font-family: var(--font-arabic);
+}
+
+[lang='en'] {
+  font-family: var(--font-latin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hdr__popover {
+    animation: none;
+  }
+  .hdr__btn,
+  .hdr__item {
+    transition: none;
+  }
+}
+
+/* The Saudi riyal sign, drawn as a mask so it looks the same everywhere. The
+   Unicode character (U+20C1) is missing from most fonts, including the bundled
+   IBM Plex, and shows as an empty box where the OS has no Unicode 17 font.
+   The mask is the official SAMA glyph shape; the colour is the text's own. */
+.riyal {
+  display: inline-block;
+  width: 0.78em;
+  height: 0.88em;
+  background-color: currentColor;
+  -webkit-mask: url('riyal.png') center / contain no-repeat;
+  mask: url('riyal.png') center / contain no-repeat;
+  vertical-align: -0.1em;
+  margin-inline-end: 0.12em;
+}
+
+/* --- story: sections 1 and 2 -----------------------------------------------
+   One person, one loop. Static, no scroll motion yet (increment 2). Coral
+   is pressure and is spent only on the beats that press: it builds through
+   these two sections, then the light phone arrives and green appears on
+   its screen. Short lines, one thought each, generous air between them. */
+
+.story {
+  max-width: 44rem;
+  padding: clamp(3.5rem, 9vw, 7rem) var(--space);
+}
+
+.story--pain {
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+/* The warm glow sits on the full-width <main>, not on the narrow column, so
+   it has no visible edge. */
+#entry {
+  background: radial-gradient(
+      60rem 30rem at 22% 0,
+      color-mix(in srgb, var(--pressure) 13%, transparent),
+      transparent 70%
+    )
+    no-repeat;
+}
+
+/* Until the Arabic is written, a story section that is showing English lays
+   out left to right as a whole, so its rule and borders sit with its text. */
+[dir='rtl'] .story:has([lang='en']),
+[dir='rtl'] .welcome:has([lang='en']),
+[dir='rtl'] .hello:has([lang='en']),
+[dir='rtl'] .ending:has([lang='en']) {
+  direction: ltr;
+}
+
+.story h1,
+.story__h2 {
+  font-size: clamp(2.25rem, 1.2rem + 5.2vw, 4.25rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  margin: 0;
+  max-width: 16ch;
+  text-wrap: balance;
+}
+
+.story__h2 {
+  font-size: clamp(1.9rem, 1.1rem + 4vw, 3.25rem);
+  max-width: 18ch;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.story__rule {
+  display: block;
+  width: 3.5rem;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--pressure);
+  margin: clamp(1.5rem, 4vw, 2.25rem) 0 clamp(2rem, 5vw, 3.25rem);
+}
+
+.story__beat {
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.625rem);
+  line-height: 1.4;
+  letter-spacing: -0.012em;
+  margin: 0 0 1.15em;
+  max-width: 30ch;
+  color: var(--page-text);
+}
+
+/* the lines that press */
+.story__pressure {
+  color: var(--pressure);
+  font-weight: 600;
+}
+
+.story__beat strong {
+  font-weight: 600;
+  background: linear-gradient(to top, var(--mark) 0.28em, transparent 0.28em);
+}
+
+.story__small {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  max-width: 34ch;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.story__act {
+  margin-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+
+.story__act .story__beat:last-child {
+  margin-bottom: 0;
+}
+
+/* the last line stands alone */
+.story__closing {
+  margin: clamp(3rem, 9vw, 6rem) 0 0;
+  padding-top: clamp(1.5rem, 4vw, 2.25rem);
+  border-top: 4px solid var(--pressure);
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 2.375rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+  text-wrap: balance;
+}
+
+/* the prototype follows: the phone is the light object on the dark page */
+#prototype {
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+/* --- scroll motion (increment 2) ----------------------------------------------
+   Motion only ENHANCES. Every rule that hides or moves something is scoped to
+   .is-live, a class scroll.js adds to a section only when JavaScript runs and
+   the visitor has not asked for reduced motion. Without it (no JavaScript, or
+   reduced motion) the scene simply shows in its final state and nothing moves.
+   Only opacity and transform animate (plus colour on the one marker that turns
+   neutral); nothing changes layout, so the page height is the same at every
+   scroll position. Paced slow on purpose: nothing here is under 0.9s. */
+
+:root {
+  --ease: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+.story {
+  --dir: 1; /* which way things travel in; flipped for right-to-left below */
+}
+.story:dir(rtl) {
+  --dir: -1;
+}
+
+/* The first state is set without a transition (is-live only), so nothing fades
+   out at load; scroll.js adds is-armed a frame later and the easing starts. */
+.is-live:not(.is-armed),
+.is-live:not(.is-armed) * {
+  transition: none !important;
+}
+
+/* Section 1: the scene ---------------------------------------------------- */
+
+.story--pain {
+  max-width: 72rem;
+}
+.story--pain > h1,
+.story--pain > .story__small {
+  max-width: 44rem;
+}
+.story--pain > h1 {
+  max-width: 16ch;
+}
+
+.scene {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 52rem) {
+  .scene {
+    grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.scene__viz {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.4vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  align-self: start;
+}
+
+.scene__months {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  position: relative;
+}
+/* the strip itself: a hairline through the middle of the markers */
+.scene__months::before {
+  content: '';
+  position: absolute;
+  inset-inline: 8%;
+  top: 0.75rem;
+  height: 1px;
+  background: var(--line);
+}
+.month {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-bottom: 0.9rem;
+}
+/* an unlabelled month tick */
+.month::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 0.5rem;
+  background: var(--line);
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  color: var(--pressure);
+}
+.marker__dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: var(--page-bg);
+}
+.marker__dot svg {
+  position: absolute;
+  inset: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.marker__ok {
+  opacity: 0;
+}
+.marker__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+/* the payments work again: neutral, not celebrated */
+.marker.is-neutral {
+  color: var(--text-muted);
+}
+.marker.is-neutral .marker__x {
+  opacity: 0;
+}
+.marker.is-neutral .marker__ok {
+  opacity: 1;
+}
+.marker.is-neutral .marker__label {
+  opacity: 0;
+}
+
+.scene__notes {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.5rem 0;
+}
+.scene__bubble {
+  grid-column: 1 / 5;
+  min-height: 3.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  border-end-start-radius: 4px;
+  background: var(--surface);
+  color: var(--page-text);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+}
+/* the notification that never came: an empty slot, dashed, under the marker
+   that turned neutral. It has no content, on purpose. */
+.scene__slot {
+  grid-column: 6;
+  justify-self: center;
+  width: 100%;
+  max-width: 5.5rem;
+  min-height: 3.5rem;
+  border: 2px dashed var(--text-muted);
+  border-radius: 14px;
+}
+
+/* live: hidden until scrolled to, sticky stage, slow and eased */
+.story--pain.is-live .scene__viz {
+  position: sticky;
+  top: max(5rem, 24svh);
+}
+.story--pain.is-live .story__lines .story__beat {
+  margin: 0;
+  min-height: 46vh;
+  min-height: 46svh;
+}
+.story--pain.is-live .story__lines .story__beat[data-tall] {
+  min-height: 90vh;
+  min-height: 90svh;
+}
+.story--pain.is-live .story__lines {
+  padding-bottom: 12vh;
+}
+
+.story--pain.is-live .story__beat {
+  opacity: 0.28;
+  transform: translateY(18px);
+  transition: opacity 1.1s var(--ease), transform 1.1s var(--ease);
+}
+.story--pain.is-live .story__beat.is-current {
+  opacity: 1;
+  transform: none;
+}
+.story--pain.is-live .story__beat.is-past {
+  opacity: var(--dim);
+  transform: none;
+}
+/* the lines that press keep their full colour once read: tension accumulates */
+.story--pain.is-live .story__beat.is-past.story__pressure {
+  opacity: 1;
+}
+
+.story--pain.is-live .marker {
+  opacity: 0;
+  transform: translateY(-1.4rem) scale(1.25);
+  transition: opacity 0.9s var(--ease), transform 1s var(--ease), color 1.2s ease;
+}
+.story--pain.is-live .marker.is-on {
+  opacity: 1;
+  transform: none;
+}
+.story--pain.is-live .marker__x,
+.story--pain.is-live .marker__ok,
+.story--pain.is-live .marker__label {
+  transition: opacity 1.2s ease;
+}
+
+.story--pain.is-live .scene__bubble {
+  opacity: 0;
+  transform: translateX(calc(var(--dir) * -1.25rem)) scale(0.96);
+  transition: opacity 0.9s var(--ease), transform 1s var(--ease);
+}
+.story--pain.is-live .scene__bubble.is-on {
+  opacity: 1;
+  transform: none;
+}
+/* the bubble arrives empty; its words resolve a beat later */
+.story--pain.is-live .scene__bubble-text {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.story--pain.is-live .scene__bubble.is-on .scene__bubble-text {
+  opacity: 1;
+  transition-delay: 1.5s;
+}
+.story--pain.is-live .scene__slot {
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 1.2s var(--ease), transform 1.2s var(--ease);
+}
+.story--pain.is-live .scene__slot.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 52rem) {
+  .scene__viz {
+    gap: 1.75rem;
+    padding: 2rem 2rem 2.25rem;
+  }
+  .scene__months::before {
+    top: 1.125rem;
+  }
+  .marker {
+    gap: 0.55rem;
+  }
+  .marker__dot {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .marker__label {
+    font-size: 0.8125rem;
+  }
+  .scene__bubble {
+    min-height: 4.75rem;
+    padding: 1rem 1.35rem;
+    font-size: 1.125rem;
+    border-radius: 22px;
+    border-end-start-radius: 5px;
+  }
+  .scene__slot {
+    min-height: 4.75rem;
+    max-width: 6.5rem;
+    border-radius: 18px;
+  }
+}
+
+/* phones: the same scene, simpler. The strip pins under the header and the
+   words scroll beneath it. */
+@media (max-width: 51.99rem) {
+  .story--pain.is-live .scene__viz {
+    order: -1;
+    top: 3.9rem;
+    z-index: 10;
+    gap: 0.7rem;
+    padding: 0.8rem 0.75rem;
+    background: var(--page-bg);
+  }
+  .story--pain.is-live .story__lines .story__beat {
+    min-height: 34vh;
+    min-height: 34svh;
+  }
+  .story--pain.is-live .story__lines .story__beat[data-tall] {
+    min-height: 70vh;
+    min-height: 70svh;
+  }
+  .scene__bubble {
+    min-height: 3rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8125rem;
+  }
+  .scene__slot {
+    min-height: 3rem;
+  }
+  .marker__label {
+    font-size: 0.625rem;
+  }
+}
+
+/* Section 2: evidence stacks in, the frame tightens, the ground warms ---------- */
+
+.story__act {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--page-text) 4%, transparent);
+}
+.story__acts {
+  position: relative;
+}
+.story__frame,
+.story__tension {
+  display: none;
+}
+
+/* the warmth: one fixed layer of coral, faint, that rises with each act. It is
+   a separate element so only its opacity animates. Text sits above it. */
+.story--agitate.is-live .story__tension {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--pressure);
+  opacity: 0;
+  transition: opacity 2.4s ease;
+}
+.story--agitate.is-live[data-n='1']:not(.is-released) .story__tension {
+  opacity: calc(var(--warm) * 0.4);
+}
+.story--agitate.is-live[data-n='2']:not(.is-released) .story__tension {
+  opacity: calc(var(--warm) * 0.7);
+}
+.story--agitate.is-live[data-n='3']:not(.is-released) .story__tension {
+  opacity: var(--warm);
+}
+
+/* the frame: a hairline rectangle held on the screen while the evidence stacks
+   up, closing in a step with each act. Fixed, so it stays put and cannot spill
+   past the end of the acts; it lets go when the closing line arrives. Transform
+   and opacity only. */
+.story--agitate.is-live .story__frame {
+  display: block;
+  position: fixed;
+  top: 8vh;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(46.5rem, calc(100% - 1rem));
+  height: 84vh;
+  z-index: -1;
+  border: 1px solid color-mix(in srgb, var(--pressure) 55%, transparent);
+  border-radius: 30px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1);
+  transform-origin: 50% 50%;
+  will-change: transform;
+  transition: transform 1.6s var(--ease), opacity 1.6s ease;
+}
+.story--agitate.is-live[data-n='1'] .story__frame {
+  transform: scale(var(--f1));
+}
+.story--agitate.is-live[data-n='2'] .story__frame {
+  transform: scale(var(--f2));
+}
+.story--agitate.is-live[data-n='3'] .story__frame {
+  transform: scale(var(--f3));
+}
+.story--agitate.is-live:not([data-n='0']):not(.is-released):not(.is-alone) .story__frame {
+  opacity: 1;
+}
+.story--agitate {
+  --warm: 0.09;
+  --f1: 0.97;
+  --f2: 0.94;
+  --f3: 0.91;
+}
+:root[data-theme='bright'] .story--agitate {
+  --warm: 0.05;
+}
+@media (max-width: 51.99rem) {
+  .story--agitate {
+    --f1: 0.985;
+    --f2: 0.97;
+    --f3: 0.955;
+  }
+}
+
+.story--agitate.is-live .story__act {
+  opacity: 0;
+  transform: translateY(2.75rem);
+  margin-bottom: 20vh;
+  margin-bottom: 20svh;
+  transition: opacity 1.3s var(--ease), transform 1.5s var(--ease);
+}
+.story--agitate.is-live .story__act.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* the closing line: alone on a near-empty screen for a full scroll beat */
+.story--agitate.is-live .story__end {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+}
+.story--agitate.is-live .story__closing {
+  margin-top: 0;
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition: opacity 1.6s ease, transform 1.8s var(--ease);
+}
+.story--agitate.is-live .story__closing.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* the hand-off: the phone section lifts in, softly */
+#prototype.is-live {
+  transition: opacity 1.6s ease, transform 1.8s var(--ease);
+}
+#prototype.is-live:not(.is-in) {
+  opacity: 0;
+  transform: translateY(3.5rem);
+}
+
+/* --- Arabic ------------------------------------------------------------- */
+
+/* Negative tracking tears a connected script apart. Every tightened
+   heading above goes back to zero in Arabic, and gets the extra line
+   height Arabic ascenders and dots need. */
+[dir='rtl'] :is(h1, h2, h3, h4, p, span, button, li) {
+  letter-spacing: 0;
+}
+
+[dir='rtl'] h1,
+[dir='rtl'] .story__h2,
+[dir='rtl'] .story__closing {
+  line-height: 1.3;
+}
+
+/* English shown inside the Arabic page (marked lang="en") keeps its own tracking */
+[dir='rtl'] .story [lang='en'] {
+  letter-spacing: -0.012em;
+}
+
+[dir='rtl'] .story h1[lang='en'],
+[dir='rtl'] .story__h2[lang='en'] {
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+
+[dir='rtl'] .story__closing[lang='en'] {
+  line-height: 1.22;
+}
+
+/* the same for the English Welcome on the Arabic page */
+[dir='rtl'] .hello__word[lang='en'] {
+  letter-spacing: -0.055em;
+}
+[dir='rtl'] .hello__lead[lang='en'] {
+  letter-spacing: -0.02em;
+}
+
+[dir='rtl'] :is(h2, h3, h4) {
+  line-height: 1.4;
+}
+
+[dir='rtl'] body {
+  line-height: 1.8;
+}
+
+/* --- the phone stage: HTML phone underneath, Flutter phone over it ------------
+   Same box, always. The HTML phone stays in the layout (hidden, not removed),
+   so the stage keeps its height and nothing moves when the engines swap. The
+   Flutter phone (#phone-host) sits over it and is shown only after it has
+   painted (assets/phone.js sets data-engine="flutter"). */
+#prototype-stage {
+  position: relative;
+}
+#phone-host {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+#prototype-root {
+  transition: opacity 0.35s ease, visibility 0s linear 0s;
+}
+#prototype-stage[data-engine='flutter'] #phone-host {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.35s ease, visibility 0s linear 0s;
+}
+#prototype-stage[data-engine='flutter'] #prototype-root {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+@media (prefers-reduced-motion: reduce) {
+  #phone-host,
+  #prototype-root,
+  #prototype-stage[data-engine='flutter'] #phone-host,
+  #prototype-stage[data-engine='flutter'] #prototype-root {
+    transition: none;
+  }
+}
+
+/* --- the opening: Welcome, then the design-project intro ---------------------
+   Two screens. Screen 1 (.hello) is one full viewport: a very large Welcome in
+   the middle over four slowly drifting layers of the page's own colours (coral
+   and green meet and mix where they cross, bone lifts them, ember deepens
+   them). It is CSS only, so it runs without JavaScript; only transform and
+   opacity ever animate, there is no filter and no canvas, so a cheap phone
+   pays for four composited layers and nothing else. Under reduced motion it is
+   a still frame of the same gradients.
+   Screen 2 (.welcome) is the intro to the design project. It is an opaque
+   sheet with a rounded top edge that slides up over the pinned Welcome: the
+   reveal is the scroll itself, so the intro's own blocks do not need to fade
+   in one by one. The card inside draws its empty rows when it comes into view
+   (assets/opening.js adds .is-seen). */
+
+.opening {
+  position: relative;
+}
+/* The header is see-through at the top once JavaScript runs, so Welcome starts
+   at the very top of the page and is centred in the whole screen. */
+.js .opening {
+  margin-top: -61px;
+}
+
+.hello {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 61px);
+  min-height: calc(100svh - 61px);
+  background: var(--page-bg);
+  text-align: center;
+}
+.js .hello {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  min-height: 0;
+}
+
+.hello__sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+}
+
+.hello__blob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--w, 120vmax);
+  height: var(--h, 80vmax);
+  margin: calc(var(--h, 80vmax) / -2) 0 0 calc(var(--w, 120vmax) / -2);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c) 0%, transparent 100%);
+  will-change: transform, opacity;
+  animation-duration: var(--t);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.hello__blob--coral {
+  --c: var(--sky-coral);
+  --w: 105vmax;
+  --h: 72vmax;
+  --t: 34s;
+  animation-name: sky-coral;
+}
+.hello__blob--green {
+  --c: var(--sky-green);
+  --w: 80vmax;
+  --h: 62vmax;
+  --t: 43s;
+  animation-name: sky-green;
+}
+.hello__blob--bone {
+  --c: var(--sky-bone);
+  --w: 70vmax;
+  --h: 50vmax;
+  --t: 27s;
+  animation-name: sky-bone;
+}
+.hello__blob--ember {
+  --c: var(--sky-ember);
+  --w: 150vmax;
+  --h: 70vmax;
+  --t: 52s;
+  animation-name: sky-ember;
+}
+
+@keyframes sky-coral {
+  from { transform: translate(-34%, -26%) rotate(-10deg) scale(1); }
+  50% { transform: translate(4%, 12%) rotate(70deg) scale(1.2); }
+  to { transform: translate(30%, -10%) rotate(150deg) scale(0.95); }
+}
+@keyframes sky-green {
+  from { transform: translate(36%, 30%) rotate(20deg) scale(0.9); opacity: 0.75; }
+  50% { transform: translate(-6%, 6%) rotate(-60deg) scale(1.15); opacity: 1; }
+  to { transform: translate(-32%, -24%) rotate(-140deg) scale(1); opacity: 0.8; }
+}
+@keyframes sky-bone {
+  from { transform: translate(-20%, 34%) rotate(0deg) scale(0.8); }
+  to { transform: translate(24%, -30%) rotate(110deg) scale(1.3); }
+}
+@keyframes sky-ember {
+  from { transform: translate(0%, 40%) rotate(0deg) scale(1); opacity: 0.7; }
+  to { transform: translate(-10%, 8%) rotate(-25deg) scale(1.15); opacity: 1; }
+}
+
+/* A calm patch behind the words so the colour never fights the type: the
+   worst frame of the drift still holds contrast (checked by pixel sampling). */
+.hello__copy {
+  position: relative;
+  z-index: 1;
+  padding: 0 var(--space);
+  max-width: 100%;
+}
+.hello__copy::before {
+  content: '';
+  position: absolute;
+  inset: -22% -8%;
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--sky-calm) 0%, var(--sky-calm) 55%, transparent 100%);
+  pointer-events: none;
+}
+
+.hello__title {
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 100%;
+  font-size: min(21vw, 17rem);
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  padding-block: 0.04em 0.14em;
+  padding-inline-end: 0.07em; /* the tight tracking leaves the last letter hanging past its box */
+  overflow: clip; /* the word rises out of this edge */
+}
+.hello__word {
+  display: inline-block;
+  animation: hello-rise 1.15s var(--ease) both;
+}
+
+.hello__lead {
+  margin: clamp(0.5rem, 2vw, 1.25rem) auto 0;
+  width: fit-content;
+  max-width: 100%;
+  font-size: clamp(1.35rem, 1rem + 1.8vw, 2.25rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  animation: hello-in 0.9s var(--ease) 1.25s both;
+}
+
+.hello__cue {
+  position: absolute;
+  inset-inline: 0;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  margin-inline: auto;
+  width: fit-content;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.1rem 0 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--page-text) 45%, transparent);
+  border-radius: 999px;
+  color: var(--page-text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  background: transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  animation: hello-in 0.9s var(--ease) 2.1s both;
+}
+.hello__cue:hover {
+  background: color-mix(in srgb, var(--page-text) 16%, transparent);
+  border-color: var(--page-text);
+}
+.hello__cue:active {
+  background: color-mix(in srgb, var(--page-text) 28%, transparent);
+  border-color: var(--page-text);
+  transform: scale(0.95);
+}
+.hello__cue:focus-visible {
+  outline: 3px solid var(--page-text);
+  outline-offset: 3px;
+}
+.hello__chev {
+  animation: hello-bob 2.4s ease-in-out 3s infinite;
+}
+
+@keyframes hello-rise {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+@keyframes hello-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes hello-bob {
+  0%, 100% { transform: none; }
+  50% { transform: translateY(4px); }
+}
+
+/* Where the browser can tie an animation to the scroll, Welcome recedes as the
+   sheet climbs over it. Transform and opacity only; a plain scroll-linked
+   enhancement, so everywhere else Welcome simply stays put and is covered. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hello__copy {
+      animation: hello-away linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 85vh;
+    }
+    @keyframes hello-away {
+      to { opacity: 0.1; transform: translateY(-5vh) scale(0.93); }
+    }
+  }
+}
+
+/* --- screen 2: the intro sheet ------------------------------------------ */
+
+.welcome {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(5rem, 12vh, 7rem) 0 clamp(2rem, 6vh, 4rem);
+  background: var(--page-bg);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -1px 0 var(--line), 0 -28px 60px -30px var(--sheet-shadow);
+  scroll-margin-top: 0;
+}
+
+.welcome__wrap {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--space);
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+@media (min-width: 52rem) {
+  .welcome__wrap {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+}
+
+/* the story's first line follows the intro sheet directly */
+.opening + .story--pain {
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+/* a section focused by an in-page jump gets no ring of its own; the link that
+   was used already showed its focus */
+section[tabindex='-1']:focus {
+  outline: none;
+}
+
+.welcome__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 1.1rem + 6.4vw, 5.25rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  max-width: 11ch;
+  text-wrap: balance;
+}
+
+.welcome__lead {
+  margin: clamp(1rem, 3vw, 1.5rem) 0 0;
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.welcome__body {
+  margin: 0.75rem 0 0;
+  max-width: 34ch;
+  font-size: clamp(1.05rem, 1rem + 0.5vw, 1.25rem);
+  line-height: 1.5;
+}
+
+.welcome__note {
+  margin: 1.25rem 0 0;
+  max-width: 40ch;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.welcome__links {
+  margin: clamp(1.25rem, 3vw, 2rem) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.welcome__go,
+.welcome__skip {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--page-text);
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+/* the main action: a filled pill that turns green under the pointer (the
+   page's relief colour) and presses in */
+.welcome__go {
+  padding: 0 1.25rem;
+  background: var(--page-text);
+  color: var(--page-bg);
+}
+.welcome__go:hover {
+  background: var(--relief);
+  color: var(--page-bg);
+}
+.welcome__go:active {
+  background: color-mix(in srgb, var(--relief) 80%, var(--c-ink));
+  color: var(--page-bg);
+  transform: scale(0.96);
+}
+
+/* the quiet action: an underlined link that gains a tint and a heavier line */
+.welcome__skip {
+  padding: 0 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+.welcome__skip:hover {
+  background: color-mix(in srgb, var(--page-text) 12%, transparent);
+  text-decoration-thickness: 2px;
+}
+.welcome__skip:active {
+  background: color-mix(in srgb, var(--page-text) 22%, transparent);
+  text-decoration-thickness: 2px;
+  transform: scale(0.96);
+}
+
+.welcome__go:focus-visible,
+.welcome__skip:focus-visible {
+  outline: 3px solid var(--page-text);
+  outline-offset: 3px;
+}
+
+.wcard {
+  width: 100%;
+  max-width: 26rem;
+  justify-self: end; /* flow-relative: mirrors in right-to-left */
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.wcard__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.wcard__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--pressure);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pressure) 22%, transparent);
+}
+
+.wcard__row {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.wcard__label {
+  font-size: 0.875rem;
+  color: var(--n-500);
+}
+
+/* an empty field: a dashed line where the answer should be */
+.wcard__empty {
+  display: block;
+  height: 0;
+  margin-bottom: 0.4rem;
+  border-bottom: 2px dashed var(--n-300);
+  transform-origin: left center;
+}
+[dir='rtl'] .wcard__empty {
+  transform-origin: right center;
+}
+
+@keyframes welcome-card {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes welcome-dot {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes welcome-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.wcard { animation: welcome-card 0.9s var(--ease) 0.15s both; }
+.wcard__dot { animation: welcome-dot 0.5s var(--ease) 0.9s both; }
+.wcard__row:nth-child(2) .wcard__empty { animation: welcome-draw 0.7s var(--ease) 1.15s both; }
+.wcard__row:nth-child(3) .wcard__empty { animation: welcome-draw 0.7s var(--ease) 1.4s both; }
+.wcard__row:nth-child(4) .wcard__empty { animation: welcome-draw 0.7s var(--ease) 1.65s both; }
+
+/* with JavaScript the card waits, undrawn, until the intro is on screen;
+   without it the card simply shows drawn */
+.js .welcome:not(.is-seen) :is(.wcard, .wcard__dot, .wcard__empty) {
+  animation-play-state: paused;
+}
+html:not(.js) :is(.wcard, .wcard__dot, .wcard__empty) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hello *,
+  .hello__cue,
+  .welcome *,
+  .wcard,
+  .wcard * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* --- the turn into the phone, and the ending --------------------------------
+   Coral marked the pressure (the rule under the closing line); a green rule
+   marks the turn. The ending reuses the same two devices. */
+
+.section .story__bridge {
+  margin: 0 0 1.75rem;
+  padding-top: 1rem;
+  border-top: 4px solid var(--relief);
+  max-width: 22ch;
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.625rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.ending {
+  max-width: 44rem;
+  padding-block: clamp(3rem, 8vw, 6rem);
+}
+
+.ending .ending__h2 {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+  max-width: 16ch;
+  font-size: clamp(1.9rem, 1.1rem + 4vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.ending .ending__beat {
+  margin: 0 0 1.1em;
+  max-width: 30ch;
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.625rem);
+  line-height: 1.4;
+  letter-spacing: -0.012em;
+}
+
+.ending .ending__relief {
+  color: var(--relief);
+  font-weight: 600;
+}
+
+.ending .ending__fix {
+  margin: clamp(2rem, 6vw, 3.5rem) 0 0;
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+  border-top: 4px solid var(--relief);
+  max-width: 22ch;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 2.375rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* the line that names the problem, in one sentence, before the fix */
+.ending .ending__name {
+  margin: clamp(1.5rem, 4vw, 2.5rem) 0 0;
+  max-width: 26ch;
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.625rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+}
+
+/* Arabic Welcome: the hamza and tanwin sit above the line box, so the clipped
+   line-mask needs more room on top, and Arabic joins are not tracked tight. */
+.hello__title:lang(ar),
+[dir='rtl'] .hello__title:not(:has([lang='en'])) {
+  line-height: 1.2;
+  letter-spacing: 0;
+  padding-block: 0.22em 0.12em;
+}
+
+/* --- the climax, drawn ---------------------------------------------------------
+   The app has four tabs and none of them shows the limit. Each tab is checked in
+   turn and gets a coral cross; the slot for the limit stays EMPTY, dashed, the
+   whole time. Only opacity and transform animate. The hidden first state exists
+   only while scroll.js runs (.is-live); without JavaScript or with reduced
+   motion the picture simply shows finished. */
+
+.story__act .climax {
+  margin: clamp(1.5rem, 4vw, 2.25rem) 0 0;
+  max-width: 24rem;
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+.climax__slot {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem 1rem;
+  border: 2px dashed var(--n-300);
+  border-radius: 14px;
+}
+
+.climax__slot-label {
+  font-size: 0.9rem;
+  color: var(--n-600);
+}
+
+/* the empty value: a dashed line where the number should be, and nothing on it */
+.climax__slot-empty {
+  display: block;
+  height: 0;
+  margin-block: 0.35rem 0.25rem;
+  border-bottom: 2px dashed var(--n-300);
+}
+
+.climax__tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.climax__tab {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.climax__tab-name {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--page-text);
+}
+
+.climax__x {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pressure) 18%, transparent);
+  color: var(--pressure);
+}
+
+.climax__xmark {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.story--agitate.is-live .climax__x {
+  opacity: 0;
+  transform: scale(0.4);
+}
+.story--agitate.is-live .climax.is-seen .climax__x {
+  opacity: 1;
+  transform: none;
+}
+.story--agitate.is-live.is-armed .climax__x {
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  transition-delay: 0s;
+}
+.story--agitate.is-live.is-armed .climax.is-seen .climax__x {
+  transition-delay: calc(0.5s + var(--i) * 0.5s);
+}
+
+/* the slot never fills; once every tab has been checked a coral edge fades in over
+   it (a layer whose opacity animates, so no border colour is transitioned) */
+.climax__slot {
+  position: relative;
+}
+.climax__slot::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px dashed var(--pressure);
+  border-radius: 14px;
+  pointer-events: none;
+}
+.story--agitate.is-live .climax__slot::before {
+  opacity: 0;
+}
+.story--agitate.is-live .climax.is-seen .climax__slot::before {
+  opacity: 1;
+}
+.story--agitate.is-live.is-armed .climax__slot::before {
+  transition: opacity 0.6s ease;
+}
+.story--agitate.is-live.is-armed .climax.is-seen .climax__slot::before {
+  transition-delay: 2.7s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .climax__x,
+  .climax__slot::before {
+    transition: none !important;
+  }
+}
+
+/* --- the eight content pieces ------------------------------------------------
+   The one-sentence fix (in the intro sheet), the value stream before the phone,
+   and the depth below it: three cases, what was not built, the metrics and how
+   the test would run, what ships first, sources and limits. */
+
+.welcome .welcome__fix {
+  margin: 1rem 0 0;
+  max-width: 36ch;
+  font-size: clamp(1.05rem, 1rem + 0.5vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+/* the value stream: the same decline, today and proposed. Today breaks; proposed goes on */
+.section .stream {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+}
+@media (min-width: 40rem) {
+  .section .stream {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+}
+.stream .stream__h {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.stream .stream__row {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stream .stream__step {
+  position: relative;
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+/* the short link between one step and the next */
+.stream .stream__step + .stream__step::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 1.4rem;
+  top: -0.65rem;
+  height: 0.65rem;
+  border-inline-start: 2px solid var(--line);
+}
+.stream .stream__row--today .stream__end {
+  border: 2px dashed var(--pressure);
+  color: var(--pressure);
+  font-weight: 600;
+}
+.stream .stream__row--proposed .stream__end {
+  border: 2px solid var(--relief);
+  color: var(--relief);
+  font-weight: 600;
+}
+
+#prototype.is-live .stream__step {
+  opacity: 0;
+  transform: translateY(8px);
+}
+#prototype.is-live .stream.is-seen .stream__step {
+  opacity: 1;
+  transform: none;
+}
+#prototype.is-live.is-armed .stream__step {
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  transition-delay: 0s;
+}
+#prototype.is-live.is-armed .stream.is-seen .stream__step {
+  transition-delay: calc(var(--i) * 0.35s);
+}
+
+/* three cases */
+.cases.section {
+  max-width: 72rem;
+}
+.cases .cases__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 56rem) {
+  .cases .cases__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+.cases .case {
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.cases .case__title {
+  margin: 0 0 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.cases .case__list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+.cases .case__list dt {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  color: var(--n-600);
+}
+.cases .case__list dd {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.cases .case__fix {
+  padding-inline-start: 0.9rem;
+  border-inline-start: 3px solid var(--relief);
+}
+.cases .case__fix dd {
+  font-weight: 600;
+}
+
+.skipped,
+.sources {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+}
+.skipped li,
+.sources li {
+  margin: 0 0 0.85rem;
+  line-height: 1.5;
+}
+.sources.sources--limits {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+.section .ships__lead {
+  font-size: clamp(1.25rem, 1.05rem + 1vw, 1.625rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  max-width: 28ch;
+}

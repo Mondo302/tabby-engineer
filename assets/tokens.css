@@ -1,0 +1,204 @@
+/* Brand tokens, parsed from the product's own brand site (see research §5).
+   One source of truth: no colour or font is declared anywhere else. */
+
+@font-face {
+  font-family: 'Plex Sans';
+  src: url('fonts/plex-sans-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plex Sans';
+  src: url('fonts/plex-sans-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plex Arabic';
+  src: url('fonts/plex-arabic-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plex Arabic';
+  src: url('fonts/plex-arabic-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  /* Raw palette. Never used by a component directly: components read the
+     role tokens below, so a theme is a re-mapping, not a rewrite. */
+  --brand-green: #6cff93;
+  --c-ink: #1a1919;
+  --c-paper: #ffffff;
+
+  /* Accents */
+  --coral: #e3715d;
+  --gold: #edcc37;
+  --sky: #66abfe;
+  --pearl: #dda2fa;
+  --olive: #ada95b;
+
+  /* Semantic: positive / negative / warning, light to strong */
+  --pos-100: #daf0df;
+  --pos-300: #90d19f;
+  --pos-500: #57c26e;
+  --neg-100: #ffe1de;
+  --neg-300: #fc9b8e;
+  --neg-500: #e3715d;
+  --warn-100: #fcedb8;
+  --warn-300: #faac5e;
+  --warn-500: #ea883d;
+
+  /* Neutrals */
+  --c-n-50: #f5f4f2;
+  --c-n-100: #ebe7e4;
+  --c-n-200: #d6d3d0;
+  --c-n-300: #bab6b3;
+  --c-n-400: #8f8b88;
+  --c-n-500: #75726f;
+  --c-n-600: #595754;
+  --c-n-700: #3d3b3a;
+  --c-n-800: #292826;
+
+  /* Type. The brand's own faces are proprietary and not embeddable.
+     IBM Plex Sans and IBM Plex Sans Arabic are drawn as one superfamily,
+     so Latin and Arabic share a skeleton, which is what a real parity
+     requirement needs, rather than two unrelated faces bolted together.
+     Self-hosted: no third-party font request at runtime. */
+  --font-latin: 'Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-arabic: 'Plex Arabic', 'Plex Sans', system-ui, sans-serif;
+
+  /* Scale */
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: 2.5rem;
+  --space: 1rem;
+  --radius: 14px;
+  --radius-lg: 28px;
+
+  /* Fixed semantic colours (used on the light phone screens). */
+  --declined: var(--neg-500);
+  --declined-bg: var(--neg-100);
+  --review: var(--warn-500);
+  --review-bg: var(--warn-100);
+  --restored: var(--pos-500);
+  --restored-bg: var(--pos-100);
+}
+
+/* ---- Themes -----------------------------------------------------------
+   Dark is the default. <html data-theme="dark|bright"> selects; the head
+   script sets it before first paint, and the markup ships data-theme="dark"
+   so the no-JavaScript page is dark too.
+
+   Page roles (--page-*, --pressure, --relief) are new. The older role names
+   (--ink, --paper, --surface, --n-*) are what the existing page components
+   already read; the dark theme inverts them so those components adapt
+   without a rewrite. The phone re-declares the original light values below,
+   because the real app is light in both themes. */
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page-bg: var(--c-ink); /* #1a1919 */
+  --page-text: var(--c-n-50);
+  --text-muted: var(--c-n-400); /* 5.19:1 on the ground; never put it on a card */
+  --line: var(--c-n-700);
+  --pressure: #e3715d; /* coral on ink 5.67:1 */
+  --dim: 0.6; /* a beat already read settles to this; keeps 4.5:1 on the ground */
+  --relief: #6cff93;
+  --header-bg: var(--c-ink);
+  --header-glass: rgba(26, 25, 25, 0.68); /* the frosted header once the page has scrolled */
+  --mark: rgba(237, 204, 55, 0.22);
+  --chip-sub: var(--c-n-600); /* small text on the active scenario chip */
+
+  /* The opening's moving colour: the palette's coral (227,113,93) and green
+     (108,255,147), bone, and a deep ember, each as a see-through wash. */
+  --sky-coral: rgba(227, 113, 93, 0.78);
+  --sky-green: rgba(108, 255, 147, 0.5);
+  --sky-bone: rgba(245, 244, 242, 0.14);
+  --sky-ember: rgba(150, 42, 28, 0.6);
+  --sky-calm: rgba(26, 25, 25, 0.55); /* a quiet patch behind the words */
+  --sheet-shadow: rgba(0, 0, 0, 0.6);
+
+  /* inverted: the components that read these sit on the dark ground */
+  --ink: var(--c-n-50);
+  --paper: var(--c-n-800);
+  --surface: var(--c-n-800);
+  --surface-sunken: var(--c-n-700);
+  --text: var(--c-n-50);
+  --n-50: var(--c-n-800);
+  --n-100: var(--c-n-700);
+  --n-200: var(--c-n-600);
+  --n-300: var(--c-n-500);
+  --n-400: var(--c-n-400);
+  --n-500: var(--c-n-300);
+  --n-600: var(--c-n-200);
+  --n-700: var(--c-n-100);
+  --n-800: var(--c-n-50);
+  --app-bg: var(--c-n-800);
+}
+
+/* Bright, and the phone in every theme: the original light values. */
+:root[data-theme='bright'],
+.phone {
+  --ink: var(--c-ink);
+  --paper: var(--c-paper);
+  --surface: var(--c-paper);
+  --surface-sunken: var(--c-n-100);
+  --text: var(--c-ink);
+  --text-muted: var(--c-n-500);
+  --line: var(--c-n-200);
+  --n-50: var(--c-n-50);
+  --n-100: var(--c-n-100);
+  --n-200: var(--c-n-200);
+  --n-300: var(--c-n-300);
+  --n-400: var(--c-n-400);
+  --n-500: var(--c-n-500);
+  --n-600: var(--c-n-600);
+  --n-700: var(--c-n-700);
+  --n-800: var(--c-n-800);
+  --app-bg: var(--c-n-50);
+}
+
+:root[data-theme='bright'] {
+  color-scheme: light;
+  --page-bg: var(--c-n-50); /* #f5f4f2 */
+  --page-text: var(--c-n-800);
+  --text-muted: var(--c-n-600); /* 6.55:1 */
+  --dim: 0.8; /* dark text on the light ground needs a lighter fade to hold 4.5:1 */
+  --pressure: #b83e2a; /* darker coral: 5.08:1 on the ground, 5.5:1 on white */
+  --relief: #1e7a3c; /* green dark enough to be a graphic on the ground: 4.89:1 */
+  --header-bg: var(--c-n-50);
+  --header-glass: rgba(245, 244, 242, 0.72);
+  --mark: var(--warn-100);
+  --chip-sub: var(--c-n-300);
+
+  --sky-coral: rgba(227, 113, 93, 0.5);
+  --sky-green: rgba(108, 255, 147, 0.6);
+  --sky-bone: rgba(255, 255, 255, 0.7);
+  --sky-ember: rgba(184, 62, 42, 0.3);
+  --sky-calm: rgba(245, 244, 242, 0.55);
+  --sheet-shadow: rgba(26, 25, 25, 0.28);
+}
+
+/* The phone is the light object on the dark page, in EVERY theme, and its
+   text has to hold 4.5:1 on its own light screens (checked in browser.mjs,
+   dark page, every screen state). Two things follow, both scoped to .phone:
+   - the grey text steps (n-400, n-500) sit on the same darker step, because
+     n-500 measured 4.35:1 and n-400 3.07:1 on the screen colour;
+   - the semantic colours get an -ink variant for TEXT. The bright fills
+     (declined coral, review orange, restored green) stay as they are for
+     bars, dots and chips; as text on the light screen they measured 2.0 to
+     2.5:1. */
+:root {
+  --declined-ink: #a8402d;
+  --review-ink: #8a4a10;
+  --restored-ink: #1e6b36;
+}
+.phone {
+  --n-400: var(--c-n-600);
+  --n-500: var(--c-n-600);
+}
